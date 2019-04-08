@@ -1,8 +1,9 @@
-package main
+package utility
 
 import "fmt"
 
-func write(storage []byte, content string, offset int) {
+// Write writes in storage array
+func Write(storage []byte, content string, offset int) {
 	if len(content) == 0 {
 		return
 	}
@@ -11,7 +12,8 @@ func write(storage []byte, content string, offset int) {
 	}
 }
 
-func read(storage []byte, offset int, length int) (string, error) {
+// Read reads from storage array
+func Read(storage []byte, offset int, length int) (string, error) {
 	if length < 0 {
 		return "", fmt.Errorf("length is negative")
 	}

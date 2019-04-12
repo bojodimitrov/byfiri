@@ -30,3 +30,11 @@ func ReadRaw(storage []byte, offset int, length int) (string, error) {
 	}
 	return string(storage[offset : length+offset]), nil
 }
+
+// ReadByte reads from storage array and return byte array
+func ReadByte(storage []byte, offset int, length int) ([]byte, error) {
+	if length < 0 {
+		return nil, fmt.Errorf("length is negative")
+	}
+	return storage[offset : length+offset], nil
+}

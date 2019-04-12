@@ -79,5 +79,11 @@ func main() {
 	size, blockSize := readArgs()
 	storage := utility.InitFsSpace(size)
 	utility.AllocateAllStructures(storage, size, blockSize)
-	fmt.Println(utility.ReadMetadata(storage))
+	// a := []structures.DirectoryContent{structures.DirectoryContent{Inode: 313, FileName: "abv.txt"}, structures.DirectoryContent{Inode: 2212, FileName: "dawxwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawd.exe"}}
+	// b, err := diracts.EncodeDirectoryContent(a)
+	// fmt.Println(err)
+	// fmt.Println(b)
+	// c := diracts.DecodeDirectoryContent(b)
+	// fmt.Println(c)
+
 }

@@ -1,4 +1,4 @@
-package error_handling
+package errors
 
 import (
 	"fmt"
@@ -8,8 +8,8 @@ import (
 // CorruptMetadata prints error returned from reading the metadata and stops execution
 func CorruptMetadata(err error) {
 	if err != nil {
-		fmt.Println(err)
 		fmt.Println("corrupt metadata")
+		fmt.Println(err)
 		os.Exit(3)
 	}
 }
@@ -17,8 +17,17 @@ func CorruptMetadata(err error) {
 // CorruptBitmap prints error returned from reading the metadata and stops execution
 func CorruptBitmap(err error, bitmap string) {
 	if err != nil {
-		fmt.Println(err)
 		fmt.Println("corrupt " + bitmap + " bitmap")
+		fmt.Println(err)
+		os.Exit(3)
+	}
+}
+
+// CorruptData is generic error handler
+func CorruptData(err error, message string) {
+	if err != nil {
+		fmt.Println("corrupt data: " + message)
+		fmt.Println(err)
 		os.Exit(3)
 	}
 }

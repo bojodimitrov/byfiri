@@ -33,7 +33,14 @@ const InodeSize = 133
 // Bitmap enum
 type Bitmap int
 
+// Bitmap enum values
 const (
 	Inodes Bitmap = 0
 	Blocks Bitmap = 1
 )
+
+// DirectoryContent describes the content that a directory will contain
+type DirectoryContent struct {
+	Inode    uint32
+	FileName string
+}

@@ -1,4 +1,4 @@
-package utility
+package core
 
 import (
 	"GoFyS/errors"

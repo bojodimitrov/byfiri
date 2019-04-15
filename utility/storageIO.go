@@ -1,12 +1,25 @@
 package utility
 
 import (
+	"GoFyS/errors"
+	"GoFyS/structures"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
 // Write writes in storage array
 func Write(storage []byte, content string, offset int) {
+	if len(content) == 0 {
+		return
+	}
+	for i := 0; i < len(content); i++ {
+		storage[i+offset] = content[i]
+	}
+}
+
+// WriteByte writes in storage array
+func WriteByte(storage []byte, content []byte, offset int) {
 	if len(content) == 0 {
 		return
 	}
@@ -37,4 +50,107 @@ func ReadByte(storage []byte, offset int, length int) ([]byte, error) {
 		return nil, fmt.Errorf("length is negative")
 	}
 	return storage[offset : length+offset], nil
+}
+
+// ReadMetadata read metadata information from storage and returns it
+func ReadMetadata(storage []byte) structures.Metadata {
+	var input [8]int
+	sizeStr, err := Read(storage, 0, 20)
+	errors.CorruptMetadata(err)
+	size, err := strconv.Atoi(sizeStr)
+	errors.CorruptMetadata(err)
+	input[0] = size
+	for i := 1; i < 8; i++ {
+		valueStr, err := Read(storage, (i+1)*10, 10)
+		errors.CorruptMetadata(err)
+		value, err := strconv.Atoi(valueStr)
+		errors.CorruptMetadata(err)
+		input[i] = value
+	}
+
+	fsdata := structures.Metadata{StorageSize: uint64(input[0]),
+		InodesCount:  uint32(input[1]),
+		BlockSize:    uint32(input[2]),
+		BlockCount:   uint32(input[3]),
+		InodesMap:    uint32(input[4]),
+		Root:         uint32(input[5]),
+		FreeSpaceMap: uint32(input[6]),
+		FirstBlock:   uint32(input[7])}
+	return fsdata
+}
+
+// WriteBitmap writes the given value on the given index
+func WriteBitmap(storage []byte, bitmap structures.Bitmap, value byte, index int) {
+	fsdata := ReadMetadata(storage)
+	bitmapStart := 0
+	bitmapLength := 0
+	switch bitmap {
+	case structures.Inodes:
+		bitmapStart = int(fsdata.InodesMap)
+		bitmapLength = int(fsdata.InodesCount / 8)
+	case structures.Blocks:
+		bitmapStart = int(fsdata.FreeSpaceMap)
+		bitmapLength = int(fsdata.BlockCount / 8)
+	default:
+		errors.IncorrectFormat("Bitmap option")
+	}
+
+	if index >= bitmapLength {
+		panic("bitmap index exceeds bitmap length")
+	}
+
+	WriteByte(storage, []byte{value}, bitmapStart+index)
+}
+
+//GetBitmapIndex returns byte value transformed as binary array at index
+func GetBitmapIndex(storage []byte, bitmap structures.Bitmap, index int) []bool {
+	fsdata := ReadMetadata(storage)
+	bitmapStart := 0
+	bitmapLength := 0
+	switch bitmap {
+	case structures.Inodes:
+		bitmapStart = int(fsdata.InodesMap)
+		bitmapLength = int(fsdata.InodesCount / 8)
+	case structures.Blocks:
+		bitmapStart = int(fsdata.FreeSpaceMap)
+		bitmapLength = int(fsdata.BlockCount / 8)
+	default:
+		errors.IncorrectFormat("Bitmap option")
+	}
+
+	if index >= bitmapLength {
+		panic("bitmap index exceeds bitmap length")
+	}
+
+	byteValue, err := ReadByte(storage, bitmapStart+index, 1)
+	if err != nil {
+		errors.CorruptBitmap(err, string(bitmap))
+	}
+	boolOctet := ByteToBin(byteValue)
+	// bitmapArray contains 8 bits that correspond to the byte index
+	return boolOctet
+}
+
+//GetBitmap returns whole bitmap as binary array
+func GetBitmap(storage []byte, bitmap structures.Bitmap) []bool {
+	fsdata := ReadMetadata(storage)
+	bitmapStart := 0
+	bitmapLength := 0
+	switch bitmap {
+	case structures.Inodes:
+		bitmapStart = int(fsdata.InodesMap)
+		bitmapLength = int(fsdata.InodesCount / 8)
+	case structures.Blocks:
+		bitmapStart = int(fsdata.FreeSpaceMap)
+		bitmapLength = int(fsdata.BlockCount / 8)
+	default:
+		errors.IncorrectFormat("Bitmap option")
+	}
+
+	bitmapHexStr, err := ReadByte(storage, bitmapStart, bitmapLength)
+	if err != nil {
+		errors.CorruptBitmap(err, string(bitmap))
+	}
+	bitmapArray := ByteToBin(bitmapHexStr)
+	return bitmapArray
 }

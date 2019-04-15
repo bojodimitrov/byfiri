@@ -14,6 +14,14 @@ func CorruptMetadata(err error) {
 	}
 }
 
+// CorruptInode prints error returned from reading an inode and stops execution
+func CorruptInode(err error, inode int) {
+	if err != nil {
+		fmt.Println(err)
+		panic("corrupt inode: " + string(inode))
+	}
+}
+
 // CorruptBitmap prints error returned from reading the metadata and stops execution
 func CorruptBitmap(err error, bitmap string) {
 	if err != nil {

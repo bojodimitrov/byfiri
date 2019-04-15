@@ -11,19 +11,21 @@ import (
 // Basic structures needed for the fs:
 //	* File system metadata:
 //				Contains information for the file system: storage size, block size, location of root inode, etc.
+//	* Free inodes bitmap:
+//				an array describing free inodes. The length of the array is
+// 				the number of all inodes. Since we use byte array, an index of the byte array
+// 				could contain information for 8 inodes: for example if we have 64 inodes, we can
+//				squeeze the bitmap in 8 locations: the first index will contain information of inodes
+//				0-7, the second index- of inodes 8-15, etc.
 // 	* Inodes array:
 //				all inodes will be stored there, an inode can be either free or describing a file
 // 				the ID of the inode will be its index in the inodes array
-// 	* Free space bitmap:
-// 				an array describing free blocks. The length of the array is
-// 				the number of all blocks. Since we use byte array, an index of the byte array
-// 				could contain information for 8 blocks: for example if we have 64 blocks, we can
-//				squeeze the bitmap in 8 locations: the first index will contain information of blocks
-//				0-7, the second index- of blocks 8-15, etc.
+// 	* Free blocks bitmap:
+// 				an array describing free blocks. Works same way as inodes bitmap
 //	* Blocks space:
 //				The space where the data blocks will be stored
 // Current planned structure of the file system array:
-// [[FS Metadata] [Inodes array] [Free space bitmap] [Data blocks]]
+// [[FS Metadata] [Inodes bitmap] [Inodes array] [Free space bitmap] [Data blocks]]
 
 func readArgs() (int, int) {
 	if !checkArguments() {
@@ -77,5 +79,15 @@ func main() {
 	size, blockSize := readArgs()
 	storage := utility.InitFsSpace(size)
 	utility.AllocateAllStructures(storage, size, blockSize)
-	fmt.Println(utility.ReadMetadata(storage))
+	content := "dawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawd"
+	inode2 := utility.AllocateFile(storage, 1, content)
+	fmt.Println(utility.ReadFile(storage, inode2))
+	fmt.Println(utility.ReadDirectory(storage, 1))
+	// a := []structures.DirectoryContent{structures.DirectoryContent{Inode: 313, FileName: "abv.txt"}, structures.DirectoryContent{Inode: 2212, FileName: "dawxwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawd.exe"}}
+	// b, err := diracts.EncodeDirectoryContent(a)
+	// fmt.Println(err)
+	// fmt.Println(b)
+	// c := diracts.DecodeDirectoryContent(b)
+	// fmt.Println(c)
+
 }

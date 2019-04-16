@@ -1,5 +1,6 @@
 # Folders
 .vscode/
 
-# Exe files
+# Files
 *.exe
+*debug

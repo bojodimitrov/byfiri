@@ -1,8 +1,9 @@
 package core__test
 
 import (
-	"GoFyS/core"
 	"testing"
+
+	"github.com/bojodimitrov/gofys/core"
 )
 
 var containstests = []struct {

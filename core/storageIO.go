@@ -1,10 +1,11 @@
 package core
 
 import (
-	"GoFyS/errors"
-	"GoFyS/structures"
 	"strconv"
 	"strings"
+
+	"github.com/bojodimitrov/gofys/errors"
+	"github.com/bojodimitrov/gofys/structures"
 )
 
 // Write writes in storage array

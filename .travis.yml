@@ -1,2 +1,6 @@
 language: go
-script: go test GoFyS\tests...
+
+script: go test ./...
+
+notifications:
+    email: false

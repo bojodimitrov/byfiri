@@ -1,10 +1,11 @@
 package core
 
 import (
-	"GoFyS/diracts"
-	"GoFyS/structures"
 	"fmt"
 	"math"
+
+	"github.com/bojodimitrov/gofys/diracts"
+	"github.com/bojodimitrov/gofys/structures"
 )
 
 // In order to determine the count of the inodes, thus defining the max files count,

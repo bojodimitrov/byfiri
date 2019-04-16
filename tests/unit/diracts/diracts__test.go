@@ -1,9 +1,10 @@
 package diracts__test
 
 import (
-	"GoFyS/diracts"
-	s "GoFyS/structures"
 	"testing"
+
+	"github.com/bojodimitrov/gofys/diracts"
+	s "github.com/bojodimitrov/gofys/structures"
 )
 
 var encodetests = []struct {

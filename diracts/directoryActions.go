@@ -1,11 +1,12 @@
 package diracts
 
 import (
-	"GoFyS/errors"
-	"GoFyS/structures"
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/bojodimitrov/gofys/errors"
+	"github.com/bojodimitrov/gofys/structures"
 )
 
 // EncodeDirectoryContent returns byte array containing all files info

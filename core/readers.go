@@ -1,11 +1,12 @@
 package core
 
 import (
-	"GoFyS/diracts"
-	"GoFyS/errors"
-	"GoFyS/structures"
 	"bytes"
 	"strconv"
+
+	"github.com/bojodimitrov/gofys/diracts"
+	"github.com/bojodimitrov/gofys/errors"
+	"github.com/bojodimitrov/gofys/structures"
 )
 
 //ReadInode returns an Inode structure written behind inode location

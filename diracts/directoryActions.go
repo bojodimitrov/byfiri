@@ -13,6 +13,9 @@ func EncodeDirectoryContent(files []structures.DirectoryContent) (string, error)
 	var content strings.Builder
 	for _, value := range files {
 		fileNameSize := len(value.FileName)
+		if fileNameSize == 0 {
+			return "", fmt.Errorf("file name cannot be empty")
+		}
 		if fileNameSize > 255 {
 			return "", fmt.Errorf("file name too long")
 		}
@@ -36,7 +39,7 @@ func DecodeDirectoryContent(content string) []structures.DirectoryContent {
 	for inodeStr != "" {
 		offset += 10
 		inode, err := strconv.Atoi(inodeStr)
-		errors.CorruptData(err, "Inode")
+		errors.CorruptData(err, "inode")
 		fileNameSize, err := strconv.Atoi(strings.Trim(content[offset:offset+3], "\x00"))
 		offset += 3
 		errors.CorruptData(err, "file size")

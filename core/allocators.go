@@ -17,7 +17,7 @@ func calculateInodesCount(storageSize int, blockSize int) int {
 
 // Now we have to calculate the size that the inodes array will use
 func calculateInodesSpace(inodesCount int) int {
-	return inodesCount * 133
+	return inodesCount * structures.InodeSize
 }
 
 // Now what remains is to fill in the remaining space with the data blocks

@@ -1,10 +1,11 @@
 package core
 
 import (
-	"GoFyS/diracts"
-	"GoFyS/structures"
 	"fmt"
 	"math"
+
+	"github.com/bojodimitrov/gofys/diracts"
+	"github.com/bojodimitrov/gofys/structures"
 )
 
 // In order to determine the count of the inodes, thus defining the max files count,
@@ -17,7 +18,7 @@ func calculateInodesCount(storageSize int, blockSize int) int {
 
 // Now we have to calculate the size that the inodes array will use
 func calculateInodesSpace(inodesCount int) int {
-	return inodesCount * 133
+	return inodesCount * structures.InodeSize
 }
 
 // Now what remains is to fill in the remaining space with the data blocks

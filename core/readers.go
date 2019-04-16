@@ -1,11 +1,12 @@
 package core
 
 import (
-	"GoFyS/diracts"
-	"GoFyS/errors"
-	"GoFyS/structures"
 	"bytes"
 	"strconv"
+
+	"github.com/bojodimitrov/gofys/diracts"
+	"github.com/bojodimitrov/gofys/errors"
+	"github.com/bojodimitrov/gofys/structures"
 )
 
 //ReadInode returns an Inode structure written behind inode location
@@ -13,14 +14,12 @@ func ReadInode(storage []byte, metadata structures.Metadata, inode int) structur
 	inodesBeginning := int(metadata.Root)
 	inodeLocation := inodesBeginning + inode*int(structures.InodeSize)
 	//First 3 bytes are mode
-	modeStr, err := Read(storage, inodeLocation, 3)
-	errors.CorruptInode(err, inode)
+	modeStr := Read(storage, inodeLocation, 3)
 	mode, err := strconv.Atoi(modeStr)
 	errors.CorruptInode(err, inode)
 	inodeLocation += 3
 	//Next 10 bytes are size
-	sizeStr, err := Read(storage, inodeLocation, 10)
-	errors.CorruptInode(err, inode)
+	sizeStr := Read(storage, inodeLocation, 10)
 	size, err := strconv.Atoi(sizeStr)
 	errors.CorruptInode(err, inode)
 	inodeLocation += 10
@@ -28,9 +27,9 @@ func ReadInode(storage []byte, metadata structures.Metadata, inode int) structur
 	var blocksGathered [12]uint32
 	//Next 12 * 10 bytes are blocks of file
 	for i := 0; i < 12; i++ {
-		block, err := Read(storage, inodeLocation, 10)
-		errors.CorruptInode(err, inode)
+		block := Read(storage, inodeLocation, 10)
 		value, err := strconv.Atoi(block)
+		errors.CorruptInode(err, inode)
 		blocksGathered[i] = uint32(value)
 		inodeLocation += 10
 	}
@@ -47,7 +46,7 @@ func ReadContent(storage []byte, metadata structures.Metadata, inodeInfo structu
 
 	for i := 0; i < 12; i++ {
 		if inodeInfo.BlocksLocations[i] != 0 {
-			content, _ := ReadRaw(storage, blocksBeginning+int(inodeInfo.BlocksLocations[i])*blockSize, Min(blockSize, fileSize))
+			content := ReadRaw(storage, blocksBeginning+int(inodeInfo.BlocksLocations[i])*blockSize, Min(blockSize, fileSize))
 			contentBuffer.WriteString(content)
 			fileSize -= blockSize
 		}

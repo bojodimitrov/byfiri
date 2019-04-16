@@ -1,17 +1,20 @@
 package core
 
 import (
-	"GoFyS/errors"
-	"GoFyS/structures"
-	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/bojodimitrov/gofys/errors"
+	"github.com/bojodimitrov/gofys/structures"
 )
 
 // Write writes in storage array
 func Write(storage []byte, content string, offset int) {
 	if len(content) == 0 {
 		return
+	}
+	if offset > len(storage) || offset+len(content) > len(storage) {
+		panic("operation out of bound")
 	}
 	for i := 0; i < len(content); i++ {
 		storage[i+offset] = content[i]
@@ -23,46 +26,56 @@ func WriteByte(storage []byte, content []byte, offset int) {
 	if len(content) == 0 {
 		return
 	}
+	if offset > len(storage) || offset+len(content) > len(storage) {
+		panic("operation out of bound")
+	}
 	for i := 0; i < len(content); i++ {
 		storage[i+offset] = content[i]
 	}
 }
 
 // Read reads from storage array
-func Read(storage []byte, offset int, length int) (string, error) {
+func Read(storage []byte, offset int, length int) string {
 	if length < 0 {
-		return "", fmt.Errorf("length is negative")
+		panic("length is negative")
 	}
-	return strings.Replace(string(storage[offset:length+offset]), "\x00", "", -1), nil
+	if offset > len(storage) || offset+length > len(storage) {
+		panic("operation out of bound")
+	}
+	return strings.Replace(string(storage[offset:length+offset]), "\x00", "", -1)
 }
 
 // ReadRaw reads from storage array and does not remove x00s
-func ReadRaw(storage []byte, offset int, length int) (string, error) {
+func ReadRaw(storage []byte, offset int, length int) string {
 	if length < 0 {
-		return "", fmt.Errorf("length is negative")
+		panic("length is negative")
 	}
-	return string(storage[offset : length+offset]), nil
+	if offset > len(storage) || offset+length > len(storage) {
+		panic("operation out of bound")
+	}
+	return string(storage[offset : length+offset])
 }
 
 // ReadByte reads from storage array and return byte array
-func ReadByte(storage []byte, offset int, length int) ([]byte, error) {
+func ReadByte(storage []byte, offset int, length int) []byte {
 	if length < 0 {
-		return nil, fmt.Errorf("length is negative")
+		panic("length is negative")
 	}
-	return storage[offset : length+offset], nil
+	if offset > len(storage) || offset+length > len(storage) {
+		panic("operation out of bound")
+	}
+	return storage[offset : length+offset]
 }
 
 // ReadMetadata read metadata information from storage and returns it
 func ReadMetadata(storage []byte) structures.Metadata {
 	var input [8]int
-	sizeStr, err := Read(storage, 0, 20)
-	errors.CorruptMetadata(err)
+	sizeStr := Read(storage, 0, 20)
 	size, err := strconv.Atoi(sizeStr)
 	errors.CorruptMetadata(err)
 	input[0] = size
 	for i := 1; i < 8; i++ {
-		valueStr, err := Read(storage, (i+1)*10, 10)
-		errors.CorruptMetadata(err)
+		valueStr := Read(storage, (i+1)*10, 10)
 		value, err := strconv.Atoi(valueStr)
 		errors.CorruptMetadata(err)
 		input[i] = value
@@ -122,10 +135,7 @@ func GetBitmapIndex(storage []byte, bitmap structures.Bitmap, index int) []bool 
 		panic("bitmap index exceeds bitmap length")
 	}
 
-	byteValue, err := ReadByte(storage, bitmapStart+index, 1)
-	if err != nil {
-		errors.CorruptBitmap(err, string(bitmap))
-	}
+	byteValue := ReadByte(storage, bitmapStart+index, 1)
 	boolOctet := ByteToBin(byteValue)
 	// bitmapArray contains 8 bits that correspond to the byte index
 	return boolOctet
@@ -147,10 +157,7 @@ func GetBitmap(storage []byte, bitmap structures.Bitmap) []bool {
 		errors.IncorrectFormat("Bitmap option")
 	}
 
-	bitmapHexStr, err := ReadByte(storage, bitmapStart, bitmapLength)
-	if err != nil {
-		errors.CorruptBitmap(err, string(bitmap))
-	}
+	bitmapHexStr := ReadByte(storage, bitmapStart, bitmapLength)
 	bitmapArray := ByteToBin(bitmapHexStr)
 	return bitmapArray
 }

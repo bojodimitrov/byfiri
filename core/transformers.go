@@ -25,7 +25,7 @@ func ByteToBin(b []byte) []bool {
 	return binary
 }
 
-// BinToByteValue transforms binary octet to byte value
+// BinToByteValue transforms binary array to byte value
 func BinToByteValue(b []bool) byte {
 	var binBuf bytes.Buffer
 	bitSet := int64(0)

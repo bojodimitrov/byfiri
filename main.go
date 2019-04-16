@@ -1,11 +1,12 @@
 package main
 
 import (
-	"GoFyS/core"
-	"GoFyS/structures"
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/bojodimitrov/gofys/core"
+	"github.com/bojodimitrov/gofys/structures"
 )
 
 // Basic structures needed for the fs:

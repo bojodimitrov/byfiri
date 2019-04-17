@@ -33,14 +33,64 @@ func calculateNumberOfBlocks(freeSpace int, blockSize int) int {
 	return fittableBlocks - bitmapBlockSpace - (fittableBlocks-bitmapBlockSpace)%8
 }
 
+// AllocateFile writes a file on storage
+func AllocateFile(storage []byte, mode uint8, content string) int {
+	fsdata := ReadMetadata(storage)
+	blocksGathered, err := allocateContent(storage, &fsdata, content)
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+	inodeInfo := structures.Inode{Mode: mode, Size: uint32(len(content)), BlocksLocations: [12]uint32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
+	addBlockIdsInInode(&inodeInfo, blocksGathered)
+
+	return allocateInode(storage, &fsdata, &inodeInfo)
+}
+
+// AllocateDirectory writes a directory on storage
+func AllocateDirectory(storage []byte, mode uint8, content []structures.DirectoryContent) int {
+	fsdata := ReadMetadata(storage)
+	encoded, err := diracts.EncodeDirectoryContent(content)
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+	blocksGathered, err := allocateContent(storage, &fsdata, encoded)
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+	inodeInfo := structures.Inode{Mode: mode, Size: uint32(len(encoded)), BlocksLocations: [12]uint32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
+	addBlockIdsInInode(&inodeInfo, blocksGathered)
+
+	return allocateInode(storage, &fsdata, &inodeInfo)
+}
+
+// AllocateAllStructures writes all basic structures on storage
+func AllocateAllStructures(storage []byte, size int, blockSize int) structures.Metadata {
+	inodesCount := calculateInodesCount(size, blockSize)
+	inodes := calculateInodesSpace(inodesCount)
+	numberOfBlocks := uint32(calculateNumberOfBlocks(size, blockSize))
+	fsdata := structures.Metadata{StorageSize: uint64(size),
+		InodesCount:  uint32(inodesCount),
+		BlockSize:    uint32(blockSize),
+		BlockCount:   numberOfBlocks,
+		InodesMap:    structures.MetadataSize,
+		Root:         structures.MetadataSize + uint32(inodesCount)/8,
+		FreeSpaceMap: structures.MetadataSize + uint32(inodesCount)/8 + uint32(inodes),
+		FirstBlock:   structures.MetadataSize + uint32(inodesCount)/8 + uint32(inodes) + numberOfBlocks/8}
+	allocateMetadata(storage, &fsdata)
+	createRoot(storage)
+	return fsdata
+}
+
 // InitFsSpace creates storage array in memory
 func InitFsSpace(size int) []byte {
 	storage := make([]byte, size)
 	return storage
 }
 
-// AllocateMetadata writes metadata struct on storage
-func AllocateMetadata(storage []byte, fsdata *structures.Metadata) {
+func allocateMetadata(storage []byte, fsdata *structures.Metadata) {
 	Write(storage, fmt.Sprint(fsdata.StorageSize), 0)
 	Write(storage, fmt.Sprint(fsdata.InodesCount), 20)
 	Write(storage, fmt.Sprint(fsdata.BlockSize), 30)
@@ -51,15 +101,13 @@ func AllocateMetadata(storage []byte, fsdata *structures.Metadata) {
 	Write(storage, fmt.Sprint(fsdata.FirstBlock), 80)
 }
 
-// AllocateInode writes an inode struct on storage
-func AllocateInode(storage []byte, inodeInfo *structures.Inode) int {
-	freeInode, err := findFreeBitmapPosition(storage, structures.Inodes, []int{})
+func allocateInode(storage []byte, fsdata *structures.Metadata, inodeInfo *structures.Inode) int {
+	freeInode, err := findFreeBitmapPosition(storage, fsdata, structures.Inodes, []int{})
 	if err != nil {
 		fmt.Println(err)
 		return 0
 	}
 
-	fsdata := ReadMetadata(storage)
 	inodesBeginning := int(fsdata.Root)
 	offset := inodesBeginning + freeInode*structures.InodeSize
 
@@ -71,20 +119,18 @@ func AllocateInode(storage []byte, inodeInfo *structures.Inode) int {
 		Write(storage, fmt.Sprint(inodeInfo.BlocksLocations[i]), offset)
 		offset += 10
 	}
-	markOnBitmap(storage, true, inodesBeginning, freeInode, structures.Inodes)
+	markOnBitmap(storage, fsdata, true, freeInode, structures.Inodes)
 	return freeInode
 }
 
-// AllocateContent writes a file content in a block on storage
-func AllocateContent(storage []byte, content string) ([]int, error) {
-	fsdata := ReadMetadata(storage)
+func allocateContent(storage []byte, fsdata *structures.Metadata, content string) ([]int, error) {
 	numberOfRequiredBlocks := int(math.Ceil(float64(len(content)) / float64(fsdata.BlockSize)))
 	if numberOfRequiredBlocks == 0 {
 		numberOfRequiredBlocks = 1
 	}
 	var gatheredBlocks []int
 	for i := 0; i < numberOfRequiredBlocks; i++ {
-		freeBlock, err := findFreeBitmapPosition(storage, structures.Blocks, gatheredBlocks)
+		freeBlock, err := findFreeBitmapPosition(storage, fsdata, structures.Blocks, gatheredBlocks)
 		if err != nil {
 			return nil, err
 		}
@@ -94,26 +140,13 @@ func AllocateContent(storage []byte, content string) ([]int, error) {
 		blocksBeginning := int(fsdata.FirstBlock)
 		offset := blocksBeginning + value*int(fsdata.BlockSize)
 		Write(storage, content, offset)
-		markOnBitmap(storage, true, int(fsdata.InodesMap), value, structures.Blocks)
+		markOnBitmap(storage, fsdata, true, value, structures.Blocks)
 	}
 	return gatheredBlocks, nil
 }
 
-// AllocateFile writes a file on storage
-func AllocateFile(storage []byte, mode uint8, content string) int {
-	blocksGathered, err := AllocateContent(storage, content)
-	if err != nil {
-		fmt.Println(err)
-		return 0
-	}
-	inodeInfo := structures.Inode{Mode: mode, Size: uint32(len(content)), BlocksLocations: [12]uint32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
-	addBlockIdsInInode(&inodeInfo, blocksGathered)
-
-	return AllocateInode(storage, &inodeInfo)
-}
-
-func findFreeBitmapPosition(storage []byte, bitmap structures.Bitmap, inMemoryTakenPositions []int) (int, error) {
-	inodesBitmap := GetBitmap(storage, bitmap)
+func findFreeBitmapPosition(storage []byte, fsdata *structures.Metadata, bitmap structures.Bitmap, inMemoryTakenPositions []int) (int, error) {
+	inodesBitmap := GetBitmap(storage, fsdata, bitmap)
 	freePosition := -1
 	for i, val := range inodesBitmap {
 		if i != 0 && val == false && !Contains(inMemoryTakenPositions, i) {
@@ -133,11 +166,11 @@ func addBlockIdsInInode(inodeInfo *structures.Inode, blocks []int) {
 	}
 }
 
-func markOnBitmap(storage []byte, value bool, offset int, location int, bitmap structures.Bitmap) {
-	byteOctet := GetBitmapIndex(storage, bitmap, location/8)
+func markOnBitmap(storage []byte, fsdata *structures.Metadata, value bool, location int, bitmap structures.Bitmap) {
+	byteOctet := GetBitmapIndex(storage, fsdata, bitmap, location/8)
 	byteOctet[location%8] = value
 	val := BinToByteValue(byteOctet)
-	WriteBitmap(storage, bitmap, val, location/8)
+	WriteBitmap(storage, fsdata, bitmap, val, location/8)
 }
 
 func createRoot(storage []byte) {
@@ -147,22 +180,4 @@ func createRoot(storage []byte) {
 		return
 	}
 	AllocateFile(storage, 0, content)
-}
-
-// AllocateAllStructures writes all basic structures on storage
-func AllocateAllStructures(storage []byte, size int, blockSize int) structures.Metadata {
-	inodesCount := calculateInodesCount(size, blockSize)
-	inodes := calculateInodesSpace(inodesCount)
-	numberOfBlocks := uint32(calculateNumberOfBlocks(size, blockSize))
-	fsdata := structures.Metadata{StorageSize: uint64(size),
-		InodesCount:  uint32(inodesCount),
-		BlockSize:    uint32(blockSize),
-		BlockCount:   numberOfBlocks,
-		InodesMap:    structures.MetadataSize,
-		Root:         structures.MetadataSize + uint32(inodesCount)/8,
-		FreeSpaceMap: structures.MetadataSize + uint32(inodesCount)/8 + uint32(inodes),
-		FirstBlock:   structures.MetadataSize + uint32(inodesCount)/8 + uint32(inodes) + numberOfBlocks/8}
-	AllocateMetadata(storage, &fsdata)
-	createRoot(storage)
-	return fsdata
 }

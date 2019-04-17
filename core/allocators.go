@@ -175,9 +175,6 @@ func markOnBitmap(storage []byte, fsdata *structures.Metadata, value bool, locat
 
 func createRoot(storage []byte) {
 	fmt.Println("creating root")
-	content, err := diracts.EncodeDirectoryContent([]structures.DirectoryContent{structures.DirectoryContent{FileName: ".", Inode: 1}})
-	if err != nil {
-		return
-	}
-	AllocateFile(storage, 0, content)
+	content := []structures.DirectoryContent{structures.DirectoryContent{FileName: ".", Inode: 1}}
+	AllocateDirectory(storage, 0, content)
 }

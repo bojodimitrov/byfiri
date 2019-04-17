@@ -1,4 +1,4 @@
-package diracts__test
+package diractsunit__test
 
 import (
 	"testing"

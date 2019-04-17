@@ -128,6 +128,9 @@ func allocateContent(storage []byte, fsdata *structures.Metadata, content string
 	if numberOfRequiredBlocks == 0 {
 		numberOfRequiredBlocks = 1
 	}
+	if numberOfRequiredBlocks >= 12 {
+		return nil, fmt.Errorf("file is too long")
+	}
 	var gatheredBlocks []int
 	for i := 0; i < numberOfRequiredBlocks; i++ {
 		freeBlock, err := findFreeBitmapPosition(storage, fsdata, structures.Blocks, gatheredBlocks)

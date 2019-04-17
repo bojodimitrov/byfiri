@@ -1,4 +1,4 @@
-package core__test
+package coreunit__test
 
 import (
 	"testing"

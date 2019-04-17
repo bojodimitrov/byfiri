@@ -93,8 +93,7 @@ func ReadMetadata(storage []byte) structures.Metadata {
 }
 
 // WriteBitmap writes the given value on the given index
-func WriteBitmap(storage []byte, bitmap structures.Bitmap, value byte, index int) {
-	fsdata := ReadMetadata(storage)
+func WriteBitmap(storage []byte, fsdata *structures.Metadata, bitmap structures.Bitmap, value byte, index int) {
 	bitmapStart := 0
 	bitmapLength := 0
 	switch bitmap {
@@ -116,8 +115,7 @@ func WriteBitmap(storage []byte, bitmap structures.Bitmap, value byte, index int
 }
 
 //GetBitmapIndex returns byte value transformed as binary array at index
-func GetBitmapIndex(storage []byte, bitmap structures.Bitmap, index int) []bool {
-	fsdata := ReadMetadata(storage)
+func GetBitmapIndex(storage []byte, fsdata *structures.Metadata, bitmap structures.Bitmap, index int) []bool {
 	bitmapStart := 0
 	bitmapLength := 0
 	switch bitmap {
@@ -142,10 +140,10 @@ func GetBitmapIndex(storage []byte, bitmap structures.Bitmap, index int) []bool 
 }
 
 //GetBitmap returns whole bitmap as binary array
-func GetBitmap(storage []byte, bitmap structures.Bitmap) []bool {
-	fsdata := ReadMetadata(storage)
+func GetBitmap(storage []byte, fsdata *structures.Metadata, bitmap structures.Bitmap) []bool {
 	bitmapStart := 0
 	bitmapLength := 0
+
 	switch bitmap {
 	case structures.Inodes:
 		bitmapStart = int(fsdata.InodesMap)

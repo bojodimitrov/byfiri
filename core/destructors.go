@@ -3,7 +3,7 @@ package core
 import (
 	"fmt"
 
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 func deleteInode(storage []byte, fsdata *structures.Metadata, inode int) {

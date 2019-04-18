@@ -3,7 +3,7 @@ package coreunit__test
 import (
 	"testing"
 
-	"github.com/bojodimitrov/gofys/util"
+	"github.com/bojodimitrov/byfiri/util"
 )
 
 var containstests = []struct {

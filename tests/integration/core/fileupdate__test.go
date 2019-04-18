@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bojodimitrov/gofys/core"
+	"github.com/bojodimitrov/byfiri/core"
 )
 
 func TestFileUpdate(t *testing.T) {

@@ -3,8 +3,8 @@ package diractsunit__test
 import (
 	"testing"
 
-	"github.com/bojodimitrov/gofys/diracts"
-	s "github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/diracts"
+	s "github.com/bojodimitrov/byfiri/structures"
 )
 
 var encodetests = []struct {

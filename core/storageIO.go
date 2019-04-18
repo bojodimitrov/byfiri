@@ -4,10 +4,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bojodimitrov/gofys/util"
+	"github.com/bojodimitrov/byfiri/util"
 
-	"github.com/bojodimitrov/gofys/errors"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/errors"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 // Write writes in storage array

@@ -3,7 +3,7 @@ package coreint__test
 import (
 	"testing"
 
-	"github.com/bojodimitrov/gofys/core"
+	"github.com/bojodimitrov/byfiri/core"
 )
 
 func TestFileDelete(t *testing.T) {

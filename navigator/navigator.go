@@ -3,8 +3,8 @@ package navigator
 import (
 	"fmt"
 
-	"github.com/bojodimitrov/gofys/core"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/core"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 // EnterDirectory returns DirectoryIterator of the desired directory within current directory

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bojodimitrov/gofys/core"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/core"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 func setupFileSystem() ([]byte, *structures.DirectoryIterator) {

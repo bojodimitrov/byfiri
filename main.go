@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/bojodimitrov/gofys/core"
-	"github.com/bojodimitrov/gofys/navigator"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/core"
+	"github.com/bojodimitrov/byfiri/navigator"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 // Basic structures needed for the fs:

@@ -3,8 +3,8 @@ package core
 import (
 	"strings"
 
-	"github.com/bojodimitrov/gofys/structures"
-	"github.com/bojodimitrov/gofys/util"
+	"github.com/bojodimitrov/byfiri/structures"
+	"github.com/bojodimitrov/byfiri/util"
 )
 
 func clearInode(storage []byte, fsdata *structures.Metadata, inode int) {

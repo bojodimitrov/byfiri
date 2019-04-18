@@ -3,7 +3,7 @@ package coreunit__test
 import (
 	"testing"
 
-	"github.com/bojodimitrov/gofys/core"
+	"github.com/bojodimitrov/byfiri/core"
 )
 
 var storageLen = 5

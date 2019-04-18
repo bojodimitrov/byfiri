@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/bojodimitrov/gofys/diracts"
-	"github.com/bojodimitrov/gofys/structures"
-	"github.com/bojodimitrov/gofys/util"
+	"github.com/bojodimitrov/byfiri/diracts"
+	"github.com/bojodimitrov/byfiri/structures"
+	"github.com/bojodimitrov/byfiri/util"
 )
 
 // In order to determine the count of the inodes, thus defining the max files count,

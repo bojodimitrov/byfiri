@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/bojodimitrov/gofys/util"
+	"github.com/bojodimitrov/byfiri/util"
 
-	"github.com/bojodimitrov/gofys/diracts"
-	"github.com/bojodimitrov/gofys/errors"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/diracts"
+	"github.com/bojodimitrov/byfiri/errors"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 //ReadInode returns an Inode structure written behind inode location

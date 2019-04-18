@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/bojodimitrov/gofys/diracts"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/diracts"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 func updateContent(storage []byte, fsdata *structures.Metadata, inode *structures.Inode, content string) ([]int, error) {

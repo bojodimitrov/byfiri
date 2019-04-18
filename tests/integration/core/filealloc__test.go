@@ -32,7 +32,7 @@ func TestFileAllocation(t *testing.T) {
 	result := core.ReadFile(storage, fileInode)
 
 	if content != result {
-		t.Errorf("got %q, want %q", content, result)
+		t.Errorf("got %q, want %q", result, content)
 	}
 }
 
@@ -43,7 +43,7 @@ func TestFileAllocationLarge(t *testing.T) {
 	result := core.ReadFile(storage, fileInode)
 
 	if content != result {
-		t.Errorf("got %q, want %q", content, result)
+		t.Errorf("got %q, want %q", result, content)
 	}
 }
 

@@ -86,14 +86,15 @@ func main() {
 	inode := core.AllocateFile(storage, 1, content)
 	inode2 := core.AllocateFile(storage, 1, content)
 
-	fmt.Println(core.ReadFile(storage, inode))
-
-	core.UpdateFile(storage, inode2, strings.Repeat("s", 13221))
-	fmt.Println(core.ReadFile(storage, inode2))
+	core.UpdateFile(storage, inode2, strings.Repeat("s", 5523))
 	fmt.Println(len(core.ReadFile(storage, inode2)))
 
 	core.UpdateFile(storage, inode, strings.Repeat("a", 40883))
-	fmt.Println(core.ReadFile(storage, inode))
+	fmt.Println(len(core.ReadFile(storage, inode)))
+
+	core.DeleteFile(storage, inode)
+	inode = core.AllocateFile(storage, 1, strings.Repeat("a", 40883))
+	fmt.Println(inode)
 	fmt.Println(len(core.ReadFile(storage, inode)))
 
 	// a := []structures.DirectoryContent{structures.DirectoryContent{Inode: 313, FileName: "abv.txt"}, structures.DirectoryContent{Inode: 2212, FileName: "dawxwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawd.exe"}}

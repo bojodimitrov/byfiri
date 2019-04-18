@@ -139,10 +139,10 @@ func allocateContent(storage []byte, fsdata *structures.Metadata, content string
 		}
 		gatheredBlocks = append(gatheredBlocks, freeBlock)
 	}
-	for _, value := range gatheredBlocks {
+	for i, value := range gatheredBlocks {
 		blocksBeginning := int(fsdata.FirstBlock)
 		offset := blocksBeginning + value*int(fsdata.BlockSize)
-		Write(storage, content, offset)
+		Write(storage, cutContent(content, i, int(fsdata.BlockSize)), offset)
 		markOnBitmap(storage, fsdata, true, value, structures.Blocks)
 	}
 	return gatheredBlocks, nil
@@ -167,13 +167,6 @@ func addBlockIdsInInode(inodeInfo *structures.Inode, blocks []int) {
 	for i, value := range blocks {
 		inodeInfo.BlocksLocations[i] = uint32(value)
 	}
-}
-
-func markOnBitmap(storage []byte, fsdata *structures.Metadata, value bool, location int, bitmap structures.Bitmap) {
-	byteOctet := GetBitmapIndex(storage, fsdata, bitmap, location/8)
-	byteOctet[location%8] = value
-	val := BinToByteValue(byteOctet)
-	WriteBitmap(storage, fsdata, bitmap, val, location/8)
 }
 
 func createRoot(storage []byte) {

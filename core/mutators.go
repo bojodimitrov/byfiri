@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"math"
-	"strings"
 
 	"github.com/bojodimitrov/gofys/structures"
 )
@@ -42,19 +41,13 @@ func updateContent(storage []byte, fsdata *structures.Metadata, inode *structure
 		}
 	}
 
-	for _, value := range gatheredBlocks {
+	for i, value := range gatheredBlocks {
 		blocksBeginning := int(fsdata.FirstBlock)
 		offset := blocksBeginning + value*int(fsdata.BlockSize)
-		Write(storage, content, offset)
+		Write(storage, cutContent(content, i, int(fsdata.BlockSize)), offset)
 		markOnBitmap(storage, fsdata, true, value, structures.Blocks)
 	}
 	return gatheredBlocks, nil
-}
-
-func clearFile(storage []byte, blocks [12]uint32, fsdata *structures.Metadata) {
-	for _, block := range blocks {
-		Write(storage, strings.Repeat("\x00", int(fsdata.BlockSize)), int(fsdata.FirstBlock+block*fsdata.BlockSize))
-	}
 }
 
 func updateBlockIdsInInode(inodeInfo *structures.Inode, blocks []int) {
@@ -78,13 +71,6 @@ func updateInode(storage []byte, fsdata *structures.Metadata, inodeInfo *structu
 		Write(storage, fmt.Sprint(inodeInfo.BlocksLocations[i]), offset)
 		offset += 10
 	}
-}
-
-func clearInode(storage []byte, fsdata *structures.Metadata, inode int) {
-	inodesBeginning := int(fsdata.Root)
-	offset := inodesBeginning + inode*structures.InodeSize
-
-	Write(storage, strings.Repeat("\x00", structures.InodeSize), offset)
 }
 
 //UpdateFile updates file content

@@ -56,13 +56,16 @@ func AllocateFile(storage []byte, currentDirectory *structures.DirectoryIterator
 }
 
 // AllocateDirectory writes a directory on storage
-func AllocateDirectory(storage []byte, currentDirectory *structures.DirectoryIterator, name string, content []structures.DirectoryEntry) int {
+func AllocateDirectory(storage []byte, currentDirectory *structures.DirectoryIterator, name string) int {
 	if fileAlreadyExists(currentDirectory.DirectoryContent, name) {
 		fmt.Println("allocate directory: name already exists")
 		return 0
 	}
 
 	fsdata := ReadMetadata(storage)
+	content := []structures.DirectoryEntry{
+		structures.DirectoryEntry{FileName: ".", Inode: 0},
+		structures.DirectoryEntry{FileName: "..", Inode: uint32(currentDirectory.DirectoryInode)}}
 	encoded, err := diracts.EncodeDirectoryContent(content)
 	if err != nil {
 		fmt.Println(err)
@@ -77,6 +80,14 @@ func AllocateDirectory(storage []byte, currentDirectory *structures.DirectoryIte
 	addBlockIdsInInode(&inodeInfo, blocksGathered)
 
 	inode := allocateInode(storage, fsdata, &inodeInfo)
+	content[0].Inode = uint32(inode)
+
+	encoded, err = diracts.EncodeDirectoryContent(content)
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+	updateContent(storage, fsdata, &inodeInfo, encoded)
 	addFileToDirectory(storage, currentDirectory, &structures.DirectoryEntry{FileName: name, Inode: uint32(inode)})
 	return inode
 }

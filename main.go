@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/bojodimitrov/gofys/core"
+	"github.com/bojodimitrov/gofys/navigator"
 	"github.com/bojodimitrov/gofys/structures"
 )
 
@@ -79,10 +80,19 @@ func checkArguments() bool {
 func main() {
 	size, blockSize := readArgs()
 	storage := core.InitFsSpace(size)
-	core.AllocateAllStructures(storage, size, blockSize)
+	root := core.AllocateAllStructures(storage, size, blockSize)
+	inode := core.AllocateDirectory(storage, root, "bojo")
+	fmt.Println(core.ReadDirectory(storage, inode))
 
-	root := core.ReadDirectory(storage, 1)
-	root = append(root, structures.DirectoryEntry{FileName: "file.txt", Inode: 2})
-	core.UpdateDirectory(storage, 1, root)
+	bojo, _ := navigator.EnterDirectory(storage, root, "bojo")
+	core.AllocateFile(storage, bojo, "bojo_file_1", "bojo e gotin")
+	core.AllocateFile(storage, bojo, "bojo_file_2", "bojo e gotin")
+	core.AllocateFile(storage, bojo, "bojo_file_3", "bojo e gotin")
+	fmt.Println(core.ReadDirectory(storage, inode))
+
+	bojo, _ = navigator.EnterDirectory(storage, bojo, ".")
+	fmt.Println(core.ReadDirectory(storage, inode))
+
+	root, _ = navigator.EnterDirectory(storage, bojo, "..")
 	fmt.Println(core.ReadDirectory(storage, 1))
 }

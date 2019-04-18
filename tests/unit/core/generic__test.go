@@ -3,7 +3,7 @@ package coreunit__test
 import (
 	"testing"
 
-	"github.com/bojodimitrov/gofys/core"
+	"github.com/bojodimitrov/byfiri/util"
 )
 
 var containstests = []struct {
@@ -29,7 +29,7 @@ var containstests = []struct {
 func TestContains(t *testing.T) {
 	for _, ct := range containstests {
 		t.Run(ct.name, func(t *testing.T) {
-			result := core.Contains(ct.container, ct.element)
+			result := util.Contains(ct.container, ct.element)
 			if result != ct.result {
 				t.Errorf("got %t, want %t", result, ct.result)
 			}
@@ -66,7 +66,7 @@ var mintests = []struct {
 func TestMin(t *testing.T) {
 	for _, mt := range mintests {
 		t.Run(mt.name, func(t *testing.T) {
-			result := core.Min(mt.a, mt.b)
+			result := util.Min(mt.a, mt.b)
 			if result != mt.result {
 				t.Errorf("got %q, want %q", result, mt.result)
 			}

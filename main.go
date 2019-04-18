@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
-	"github.com/bojodimitrov/gofys/core"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/core"
+	"github.com/bojodimitrov/byfiri/navigator"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 // Basic structures needed for the fs:
@@ -80,28 +80,19 @@ func checkArguments() bool {
 func main() {
 	size, blockSize := readArgs()
 	storage := core.InitFsSpace(size)
-	core.AllocateAllStructures(storage, size, blockSize)
+	root := core.AllocateAllStructures(storage, size, blockSize)
+	inode := core.AllocateDirectory(storage, root, "bojo")
+	fmt.Println(core.ReadDirectory(storage, inode))
 
-	content := strings.Repeat("w", 17554)
-	inode := core.AllocateFile(storage, 1, content)
-	inode2 := core.AllocateFile(storage, 1, content)
+	bojo, _ := navigator.EnterDirectory(storage, root, "bojo")
+	core.AllocateFile(storage, bojo, "bojo_file_1", "bojo e gotin")
+	core.AllocateFile(storage, bojo, "bojo_file_2", "bojo e gotin")
+	core.AllocateFile(storage, bojo, "bojo_file_3", "bojo e gotin")
+	fmt.Println(core.ReadDirectory(storage, inode))
 
-	core.UpdateFile(storage, inode2, strings.Repeat("s", 5523))
-	fmt.Println(len(core.ReadFile(storage, inode2)))
+	bojo, _ = navigator.EnterDirectory(storage, bojo, ".")
+	fmt.Println(core.ReadDirectory(storage, inode))
 
-	core.UpdateFile(storage, inode, strings.Repeat("a", 40883))
-	fmt.Println(len(core.ReadFile(storage, inode)))
-
-	core.DeleteFile(storage, inode)
-	inode = core.AllocateFile(storage, 1, strings.Repeat("a", 40883))
-	fmt.Println(inode)
-	fmt.Println(len(core.ReadFile(storage, inode)))
-
-	// a := []structures.DirectoryContent{structures.DirectoryContent{Inode: 313, FileName: "abv.txt"}, structures.DirectoryContent{Inode: 2212, FileName: "dawxwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawdawdawdawdawdawdawdawdwdawdawdawdawdawdawdawdawddawwdaadawwdaawdawdawdawdawdawdawdawdawddawwdaawdawd.exe"}}
-	// b, err := diracts.EncodeDirectoryContent(a)
-	// fmt.Println(err)
-	// fmt.Println(b)
-	// c := diracts.DecodeDirectoryContent(b)
-	// fmt.Println(c)
-
+	root, _ = navigator.EnterDirectory(storage, bojo, "..")
+	fmt.Println(core.ReadDirectory(storage, 1))
 }

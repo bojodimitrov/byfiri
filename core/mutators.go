@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/diracts"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 func updateContent(storage []byte, fsdata *structures.Metadata, inode *structures.Inode, content string) ([]int, error) {
@@ -75,16 +76,50 @@ func updateInode(storage []byte, fsdata *structures.Metadata, inodeInfo *structu
 
 //UpdateFile updates file content
 func UpdateFile(storage []byte, inode int, content string) {
+	if inode == 0 {
+		fmt.Println("update file: inode cannot be 0")
+		return
+	}
 	fsdata := ReadMetadata(storage)
 	inodeInfo := ReadInode(storage, fsdata, inode)
-	clearFile(storage, inodeInfo.BlocksLocations, &fsdata)
-	blocks, err := updateContent(storage, &fsdata, &inodeInfo, content)
+	if inodeInfo.Mode == 0 {
+		fmt.Println("update file: file is directory")
+		return
+	}
+	clearFile(storage, inodeInfo.BlocksLocations, fsdata)
+	blocks, err := updateContent(storage, fsdata, inodeInfo, content)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	updateBlockIdsInInode(&inodeInfo, blocks)
+	updateBlockIdsInInode(inodeInfo, blocks)
 	inodeInfo.Size = uint32(len(content))
-	clearInode(storage, &fsdata, inode)
-	updateInode(storage, &fsdata, &inodeInfo, inode)
+	clearInode(storage, fsdata, inode)
+	updateInode(storage, fsdata, inodeInfo, inode)
+}
+
+//UpdateDirectory updates file content
+func UpdateDirectory(storage []byte, inode int, content []structures.DirectoryEntry) {
+	if inode == 0 {
+		fmt.Println("update directory: inode cannot be 0")
+		return
+	}
+	fsdata := ReadMetadata(storage)
+	inodeInfo := ReadInode(storage, fsdata, inode)
+	if inodeInfo.Mode == 1 {
+		fmt.Println("update directory: directory is file")
+		return
+	}
+	clearFile(storage, inodeInfo.BlocksLocations, fsdata)
+
+	encoded, err := diracts.EncodeDirectoryContent(content)
+	blocks, err := updateContent(storage, fsdata, inodeInfo, encoded)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	updateBlockIdsInInode(inodeInfo, blocks)
+	inodeInfo.Size = uint32(len(encoded))
+	clearInode(storage, fsdata, inode)
+	updateInode(storage, fsdata, inodeInfo, inode)
 }

@@ -1,7 +1,9 @@
 package core
 
 import (
-	"github.com/bojodimitrov/gofys/structures"
+	"fmt"
+
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 func deleteInode(storage []byte, fsdata *structures.Metadata, inode int) {
@@ -16,10 +18,18 @@ func deleteBlocks(storage []byte, fsdata *structures.Metadata, inodeInfo *struct
 
 //DeleteFile deletes file
 func DeleteFile(storage []byte, inode int) {
+	if inode == 0 {
+		fmt.Println("delete file: inode cannot be 0")
+		return
+	}
+	if inode == 1 {
+		fmt.Println("delete file: cannot delete root")
+		return
+	}
 	fsdata := ReadMetadata(storage)
 	inodeInfo := ReadInode(storage, fsdata, inode)
-	clearFile(storage, inodeInfo.BlocksLocations, &fsdata)
-	clearInode(storage, &fsdata, inode)
-	deleteBlocks(storage, &fsdata, &inodeInfo)
-	deleteInode(storage, &fsdata, inode)
+	clearFile(storage, inodeInfo.BlocksLocations, fsdata)
+	clearInode(storage, fsdata, inode)
+	deleteBlocks(storage, fsdata, inodeInfo)
+	deleteInode(storage, fsdata, inode)
 }

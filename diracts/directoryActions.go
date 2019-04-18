@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bojodimitrov/gofys/errors"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/errors"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 // EncodeDirectoryContent returns byte array containing all files info
-func EncodeDirectoryContent(files []structures.DirectoryContent) (string, error) {
+func EncodeDirectoryContent(files []structures.DirectoryEntry) (string, error) {
 	var content strings.Builder
 	for _, value := range files {
 		fileNameSize := len(value.FileName)
@@ -32,8 +32,8 @@ func EncodeDirectoryContent(files []structures.DirectoryContent) (string, error)
 }
 
 // DecodeDirectoryContent receives all blocks content concatenated and returns array of DirectoryContent
-func DecodeDirectoryContent(content string) []structures.DirectoryContent {
-	var filesInfo []structures.DirectoryContent
+func DecodeDirectoryContent(content string) []structures.DirectoryEntry {
+	var filesInfo []structures.DirectoryEntry
 	offset := 0
 	contentLen := len(content)
 	inodeStr := strings.Trim(content[offset:offset+10], "\x00")
@@ -45,7 +45,7 @@ func DecodeDirectoryContent(content string) []structures.DirectoryContent {
 		offset += 3
 		errors.CorruptData(err, "file size")
 		fileName := content[offset : offset+fileNameSize]
-		filesInfo = append(filesInfo, structures.DirectoryContent{
+		filesInfo = append(filesInfo, structures.DirectoryEntry{
 			Inode:    uint32(inode),
 			FileName: fileName})
 		offset += fileNameSize

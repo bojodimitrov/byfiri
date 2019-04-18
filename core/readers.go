@@ -2,15 +2,18 @@ package core
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 
-	"github.com/bojodimitrov/gofys/diracts"
-	"github.com/bojodimitrov/gofys/errors"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/util"
+
+	"github.com/bojodimitrov/byfiri/diracts"
+	"github.com/bojodimitrov/byfiri/errors"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 //ReadInode returns an Inode structure written behind inode location
-func ReadInode(storage []byte, metadata structures.Metadata, inode int) structures.Inode {
+func ReadInode(storage []byte, metadata *structures.Metadata, inode int) *structures.Inode {
 	inodesBeginning := int(metadata.Root)
 	inodeLocation := inodesBeginning + inode*int(structures.InodeSize)
 	//First 3 bytes are mode
@@ -34,11 +37,11 @@ func ReadInode(storage []byte, metadata structures.Metadata, inode int) structur
 		inodeLocation += 10
 	}
 	inodeInfo := structures.Inode{Mode: uint8(mode), Size: uint32(size), BlocksLocations: blocksGathered}
-	return inodeInfo
+	return &inodeInfo
 }
 
 //ReadContent reads file content
-func ReadContent(storage []byte, metadata structures.Metadata, inodeInfo structures.Inode) string {
+func ReadContent(storage []byte, metadata *structures.Metadata, inodeInfo *structures.Inode) string {
 	blocksBeginning := int(metadata.FirstBlock)
 	blockSize := int(metadata.BlockSize)
 	fileSize := int(inodeInfo.Size)
@@ -46,7 +49,7 @@ func ReadContent(storage []byte, metadata structures.Metadata, inodeInfo structu
 
 	for i := 0; i < 12; i++ {
 		if inodeInfo.BlocksLocations[i] != 0 {
-			content := ReadRaw(storage, blocksBeginning+int(inodeInfo.BlocksLocations[i])*blockSize, Min(blockSize, fileSize))
+			content := ReadRaw(storage, blocksBeginning+int(inodeInfo.BlocksLocations[i])*blockSize, util.Min(blockSize, fileSize))
 			contentBuffer.WriteString(content)
 			fileSize -= blockSize
 		}
@@ -58,16 +61,33 @@ func ReadContent(storage []byte, metadata structures.Metadata, inodeInfo structu
 
 //ReadFile returns file content
 func ReadFile(storage []byte, inode int) string {
+	if inode == 0 {
+		fmt.Println("read file: inode cannot be 0")
+		return ""
+	}
+
 	fsdata := ReadMetadata(storage)
 	inodeInfo := ReadInode(storage, fsdata, inode)
+	if inodeInfo.Mode == 0 {
+		fmt.Println("update file: file is directory")
+		return ""
+	}
 	return ReadContent(storage, fsdata, inodeInfo)
 }
 
 //ReadDirectory returns directory content
-func ReadDirectory(storage []byte, inode int) []structures.DirectoryContent {
+func ReadDirectory(storage []byte, inode int) []structures.DirectoryEntry {
+	if inode == 0 {
+		fmt.Println("read directory: inode cannot be 0")
+		return nil
+	}
+
 	fsdata := ReadMetadata(storage)
-	// first read inode
 	inodeInfo := ReadInode(storage, fsdata, inode)
+	if inodeInfo.Mode == 1 {
+		fmt.Println("update directory: directory is file")
+		return nil
+	}
 	content := ReadContent(storage, fsdata, inodeInfo)
 	dirContent := diracts.DecodeDirectoryContent(content)
 	return dirContent

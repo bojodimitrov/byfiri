@@ -3,35 +3,35 @@ package diractsunit__test
 import (
 	"testing"
 
-	"github.com/bojodimitrov/gofys/diracts"
-	s "github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/diracts"
+	s "github.com/bojodimitrov/byfiri/structures"
 )
 
 var encodetests = []struct {
 	name    string
-	decoded []s.DirectoryContent
+	decoded []s.DirectoryEntry
 	encoded string
 }{
 	{
 		name:    "ordinary",
-		decoded: []s.DirectoryContent{s.DirectoryContent{Inode: 1, FileName: "abv.txt"}},
+		decoded: []s.DirectoryEntry{s.DirectoryEntry{Inode: 1, FileName: "abv.txt"}},
 		encoded: "1\x00\x00\x00\x00\x00\x00\x00\x00\x007\x00\x00abv.txt"},
 	{
 		name:    "long inode",
-		decoded: []s.DirectoryContent{s.DirectoryContent{Inode: 1234567890, FileName: "abv.txt"}},
+		decoded: []s.DirectoryEntry{s.DirectoryEntry{Inode: 1234567890, FileName: "abv.txt"}},
 		encoded: "12345678907\x00\x00abv.txt"},
 	{
 		name: "more than file",
-		decoded: []s.DirectoryContent{
-			s.DirectoryContent{Inode: 1234567890, FileName: "."},
-			s.DirectoryContent{Inode: 1234567891, FileName: "abc.txt"},
-			s.DirectoryContent{Inode: 1234567892, FileName: "somefilename.txt"},
+		decoded: []s.DirectoryEntry{
+			s.DirectoryEntry{Inode: 1234567890, FileName: "."},
+			s.DirectoryEntry{Inode: 1234567891, FileName: "abc.txt"},
+			s.DirectoryEntry{Inode: 1234567892, FileName: "somefilename.txt"},
 		},
 		encoded: "12345678901\x00\x00.12345678917\x00\x00abc.txt123456789216\x00somefilename.txt",
 	},
 	{
 		name:    "long file name",
-		decoded: []s.DirectoryContent{s.DirectoryContent{Inode: 123, FileName: "thisisanamewithoveronehundredcharactersreallyreallyreallylongnamethisisandIdonotknowwhyyoustillreadthename.txt"}},
+		decoded: []s.DirectoryEntry{s.DirectoryEntry{Inode: 123, FileName: "thisisanamewithoveronehundredcharactersreallyreallyreallylongnamethisisandIdonotknowwhyyoustillreadthename.txt"}},
 		encoded: "123\x00\x00\x00\x00\x00\x00\x00110thisisanamewithoveronehundredcharactersreallyreallyreallylongnamethisisandIdonotknowwhyyoustillreadthename.txt",
 	},
 }
@@ -52,17 +52,17 @@ var veryLongFileName string = "ThreeRingsfortheElvenkingsundertheskySevenfortheD
 
 var encodetestserrors = []struct {
 	name    string
-	decoded []s.DirectoryContent
+	decoded []s.DirectoryEntry
 	encoded string
 }{
 	{
 		name:    "empty file name",
-		decoded: []s.DirectoryContent{s.DirectoryContent{Inode: 1, FileName: ""}},
+		decoded: []s.DirectoryEntry{s.DirectoryEntry{Inode: 1, FileName: ""}},
 		encoded: "",
 	},
 	{
 		name:    "too long file name",
-		decoded: []s.DirectoryContent{s.DirectoryContent{Inode: 1, FileName: veryLongFileName}},
+		decoded: []s.DirectoryEntry{s.DirectoryEntry{Inode: 1, FileName: veryLongFileName}},
 		encoded: "",
 	},
 }

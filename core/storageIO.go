@@ -4,8 +4,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/bojodimitrov/gofys/errors"
-	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/byfiri/util"
+
+	"github.com/bojodimitrov/byfiri/errors"
+	"github.com/bojodimitrov/byfiri/structures"
 )
 
 // Write writes in storage array
@@ -68,7 +70,7 @@ func ReadByte(storage []byte, offset int, length int) []byte {
 }
 
 // ReadMetadata read metadata information from storage and returns it
-func ReadMetadata(storage []byte) structures.Metadata {
+func ReadMetadata(storage []byte) *structures.Metadata {
 	var input [8]int
 	sizeStr := Read(storage, 0, 20)
 	size, err := strconv.Atoi(sizeStr)
@@ -89,7 +91,7 @@ func ReadMetadata(storage []byte) structures.Metadata {
 		Root:         uint32(input[5]),
 		FreeSpaceMap: uint32(input[6]),
 		FirstBlock:   uint32(input[7])}
-	return fsdata
+	return &fsdata
 }
 
 // WriteBitmap writes the given value on the given index
@@ -134,7 +136,7 @@ func GetBitmapIndex(storage []byte, fsdata *structures.Metadata, bitmap structur
 	}
 
 	byteValue := ReadByte(storage, bitmapStart+index, 1)
-	boolOctet := ByteToBin(byteValue)
+	boolOctet := util.ByteToBin(byteValue)
 	// bitmapArray contains 8 bits that correspond to the byte index
 	return boolOctet
 }
@@ -156,6 +158,6 @@ func GetBitmap(storage []byte, fsdata *structures.Metadata, bitmap structures.Bi
 	}
 
 	bitmapHexStr := ReadByte(storage, bitmapStart, bitmapLength)
-	bitmapArray := ByteToBin(bitmapHexStr)
+	bitmapArray := util.ByteToBin(bitmapHexStr)
 	return bitmapArray
 }

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/gofys/util"
 )
 
 func clearInode(storage []byte, fsdata *structures.Metadata, inode int) {
@@ -22,7 +23,7 @@ func clearFile(storage []byte, blocks [12]uint32, fsdata *structures.Metadata) {
 func markOnBitmap(storage []byte, fsdata *structures.Metadata, value bool, location int, bitmap structures.Bitmap) {
 	byteOctet := GetBitmapIndex(storage, fsdata, bitmap, location/8)
 	byteOctet[location%8] = value
-	val := BinToByteValue(byteOctet)
+	val := util.BinToByteValue(byteOctet)
 	WriteBitmap(storage, fsdata, bitmap, val, location/8)
 }
 

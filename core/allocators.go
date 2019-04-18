@@ -6,6 +6,7 @@ import (
 
 	"github.com/bojodimitrov/gofys/diracts"
 	"github.com/bojodimitrov/gofys/structures"
+	"github.com/bojodimitrov/gofys/util"
 )
 
 // In order to determine the count of the inodes, thus defining the max files count,
@@ -152,7 +153,7 @@ func findFreeBitmapPosition(storage []byte, fsdata *structures.Metadata, bitmap 
 	inodesBitmap := GetBitmap(storage, fsdata, bitmap)
 	freePosition := -1
 	for i, val := range inodesBitmap {
-		if i != 0 && val == false && !Contains(inMemoryTakenPositions, i) {
+		if i != 0 && val == false && !util.Contains(inMemoryTakenPositions, i) {
 			freePosition = i
 			break
 		}

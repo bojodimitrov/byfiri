@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"strconv"
 
+	"github.com/bojodimitrov/gofys/util"
+
 	"github.com/bojodimitrov/gofys/diracts"
 	"github.com/bojodimitrov/gofys/errors"
 	"github.com/bojodimitrov/gofys/structures"
@@ -46,7 +48,7 @@ func ReadContent(storage []byte, metadata structures.Metadata, inodeInfo structu
 
 	for i := 0; i < 12; i++ {
 		if inodeInfo.BlocksLocations[i] != 0 {
-			content := ReadRaw(storage, blocksBeginning+int(inodeInfo.BlocksLocations[i])*blockSize, Min(blockSize, fileSize))
+			content := util.ReadRaw(storage, blocksBeginning+int(inodeInfo.BlocksLocations[i])*blockSize, Min(blockSize, fileSize))
 			contentBuffer.WriteString(content)
 			fileSize -= blockSize
 		}

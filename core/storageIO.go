@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/bojodimitrov/gofys/util"
+
 	"github.com/bojodimitrov/gofys/errors"
 	"github.com/bojodimitrov/gofys/structures"
 )
@@ -134,7 +136,7 @@ func GetBitmapIndex(storage []byte, fsdata *structures.Metadata, bitmap structur
 	}
 
 	byteValue := ReadByte(storage, bitmapStart+index, 1)
-	boolOctet := ByteToBin(byteValue)
+	boolOctet := util.ByteToBin(byteValue)
 	// bitmapArray contains 8 bits that correspond to the byte index
 	return boolOctet
 }
@@ -156,6 +158,6 @@ func GetBitmap(storage []byte, fsdata *structures.Metadata, bitmap structures.Bi
 	}
 
 	bitmapHexStr := ReadByte(storage, bitmapStart, bitmapLength)
-	bitmapArray := ByteToBin(bitmapHexStr)
+	bitmapArray := util.ByteToBin(bitmapHexStr)
 	return bitmapArray
 }

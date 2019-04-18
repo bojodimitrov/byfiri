@@ -1,4 +1,4 @@
-package core
+package util
 
 //Contains checks if element is in container
 func Contains(container []int, element int) bool {

@@ -39,8 +39,14 @@ const (
 	Blocks Bitmap = 1
 )
 
-// DirectoryContent describes the content that a directory will contain
-type DirectoryContent struct {
+// DirectoryEntry describes the content that a directory will contain
+type DirectoryEntry struct {
 	Inode    uint32
 	FileName string
+}
+
+// DirectoryIterator keeps information about the current directory
+type DirectoryIterator struct {
+	DirectoryInode   int
+	DirectoryContent []DirectoryEntry
 }

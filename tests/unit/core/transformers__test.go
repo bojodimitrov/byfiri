@@ -3,7 +3,7 @@ package coreunit__test
 import (
 	"testing"
 
-	"github.com/bojodimitrov/gofys/core"
+	"github.com/bojodimitrov/gofys/util"
 )
 
 var bytetobintests = []struct {
@@ -40,7 +40,7 @@ var bytetobintests = []struct {
 func TestByteToBin(t *testing.T) {
 	for _, btbt := range bytetobintests {
 		t.Run(btbt.name, func(t *testing.T) {
-			result := core.ByteToBin(btbt.byteArr)
+			result := util.ByteToBin(btbt.byteArr)
 			haveError := false
 			for i, val := range result {
 				if val != btbt.binary[i] {
@@ -57,7 +57,7 @@ func TestByteToBin(t *testing.T) {
 func TestBinToByteValue(t *testing.T) {
 	for _, btbt := range bytetobintests[:3] {
 		t.Run(btbt.name, func(t *testing.T) {
-			result := core.BinToByteValue(btbt.binary)
+			result := util.BinToByteValue(btbt.binary)
 			if result != btbt.byteArr[0] {
 				t.Errorf("got %q, want %q", result, btbt.byteArr)
 			}

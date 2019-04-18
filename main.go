@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/bojodimitrov/gofys/core"
 	"github.com/bojodimitrov/gofys/structures"
@@ -82,19 +81,8 @@ func main() {
 	storage := core.InitFsSpace(size)
 	core.AllocateAllStructures(storage, size, blockSize)
 
-	content := strings.Repeat("w", 17554)
-	inode := core.AllocateFile(storage, 1, content)
-	inode2 := core.AllocateFile(storage, 1, content)
-
-	core.UpdateFile(storage, inode2, strings.Repeat("s", 5523))
-	fmt.Println(len(core.ReadFile(storage, inode2)))
-
-	core.UpdateFile(storage, inode, strings.Repeat("a", 40883))
-	fmt.Println(len(core.ReadFile(storage, inode)))
-
-	core.DeleteFile(storage, inode)
-	inode = core.AllocateFile(storage, 1, strings.Repeat("a", 40883))
-	fmt.Println(inode)
-	fmt.Println(len(core.ReadFile(storage, inode)))
-
+	root := core.ReadDirectory(storage, 1)
+	root = append(root, structures.DirectoryEntry{FileName: "file.txt", Inode: 2})
+	core.UpdateDirectory(storage, 1, root)
+	fmt.Println(core.ReadDirectory(storage, 1))
 }

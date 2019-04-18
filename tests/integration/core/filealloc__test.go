@@ -8,10 +8,15 @@ import (
 	"github.com/bojodimitrov/gofys/structures"
 )
 
-func TestRoot(t *testing.T) {
+func setupFileSystem() []byte {
 	size := 512 * 1048576
 	storage := core.InitFsSpace(size)
 	core.AllocateAllStructures(storage, size, structures.DefaultBlockSize)
+	return storage
+}
+
+func TestRoot(t *testing.T) {
+	storage := setupFileSystem()
 	rootContent := core.ReadDirectory(storage, 1)[0]
 	expected := structures.DirectoryContent{FileName: ".", Inode: 1}
 
@@ -21,9 +26,7 @@ func TestRoot(t *testing.T) {
 }
 
 func TestFileAllocation(t *testing.T) {
-	size := 512 * 1048576
-	storage := core.InitFsSpace(size)
-	core.AllocateAllStructures(storage, size, structures.DefaultBlockSize)
+	storage := setupFileSystem()
 	content := "file content"
 	fileInode := core.AllocateFile(storage, 1, content)
 	result := core.ReadFile(storage, fileInode)
@@ -34,9 +37,7 @@ func TestFileAllocation(t *testing.T) {
 }
 
 func TestFileAllocationLarge(t *testing.T) {
-	size := 512 * 1048576
-	storage := core.InitFsSpace(size)
-	core.AllocateAllStructures(storage, size, structures.DefaultBlockSize)
+	storage := setupFileSystem()
 	content := strings.Repeat("a", structures.DefaultBlockSize+10)
 	fileInode := core.AllocateFile(storage, 1, content)
 	result := core.ReadFile(storage, fileInode)
@@ -47,10 +48,7 @@ func TestFileAllocationLarge(t *testing.T) {
 }
 
 func TestFileAllocationConsequtiveInodes(t *testing.T) {
-	size := 512 * 1048576
-	storage := core.InitFsSpace(size)
-	core.AllocateAllStructures(storage, size, structures.DefaultBlockSize)
-
+	storage := setupFileSystem()
 	content := "file content"
 	rootContent := core.ReadDirectory(storage, 1)[0]
 	fileInode1 := core.AllocateFile(storage, 1, content)

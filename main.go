@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/bojodimitrov/byfiri/core"
-	"github.com/bojodimitrov/byfiri/navigator"
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
@@ -81,18 +80,32 @@ func main() {
 	size, blockSize := readArgs()
 	storage := core.InitFsSpace(size)
 	dir := core.AllocateAllStructures(storage, size, blockSize)
-	inode := core.AllocateDirectory(storage, dir, "bojo")
-	fmt.Println(core.ReadDirectory(storage, inode))
 
-	dir, _ = navigator.EnterDirectory(storage, dir, "bojo")
-	core.AllocateFile(storage, dir, "bojo_file_1", "bojo e gotin")
-	core.AllocateFile(storage, dir, "bojo_file_2", "bojo e gotin")
-	core.AllocateFile(storage, dir, "bojo_file_3", "bojo e gotin")
-	fmt.Println(core.ReadDirectory(storage, inode))
+	inodae := core.AllocateDirectory(storage, dir, "root lv1 dir1")
+	core.AllocateDirectory(storage, dir, "root lv1 dir2")
+	core.AllocateFile(storage, dir, "root lv1 f1", "man of culture")
 
-	dir, _ = navigator.EnterDirectory(storage, dir, ".")
-	fmt.Println(core.ReadDirectory(storage, inode))
+	dir, _ = core.EnterDirectory(storage, dir, "root lv1 dir1")
+	core.AllocateDirectory(storage, dir, "root lv2 dir1")
+	core.AllocateFile(storage, dir, "root lv2 f1", "hello there")
+	core.AllocateFile(storage, dir, "root lv2 f2", "thanos did nothing wrong")
 
-	dir, _ = navigator.EnterDirectory(storage, dir, "..")
-	fmt.Println(core.ReadDirectory(storage, 1))
+	dir, _ = core.EnterDirectory(storage, dir, "root lv2 dir1")
+	core.AllocateFile(storage, dir, "root lv3 f1", "i am the senate")
+
+	dir, _ = core.EnterDirectory(storage, dir, "..")
+	dir, _ = core.EnterDirectory(storage, dir, "..")
+	core.DeleteDirectory(storage, dir, inodae)
+	inode := core.AllocateFile(storage, dir, "bleh", "bleh")
+	inode2 := core.AllocateFile(storage, dir, "bleh1", "thanos did nothing wrong 22323")
+	inode3 := core.AllocateFile(storage, dir, "bleh2", "thanos did nothing wrong 324234 324 ")
+	inode4 := core.AllocateFile(storage, dir, "bleh3", "thanos did nothing wrong 234f ssdf ")
+	inode5 := core.AllocateFile(storage, dir, "bleh4", "thanos did nothing wrong sdffsd s e r3")
+	fmt.Println(core.ReadDirectory(storage, dir.DirectoryInode))
+	fmt.Println(inode, inode2, inode3, inode4, inode5)
+	fmt.Println(core.ReadFile(storage, inode))
+	fmt.Println(core.ReadFile(storage, inode2))
+	fmt.Println(core.ReadFile(storage, inode3))
+	fmt.Println(core.ReadFile(storage, inode4))
+	fmt.Println(core.ReadFile(storage, inode5))
 }

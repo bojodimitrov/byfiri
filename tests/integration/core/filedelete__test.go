@@ -56,3 +56,29 @@ func TestFileDeleteInDirectory(t *testing.T) {
 		}
 	}
 }
+
+func TestDeleteDirectory(t *testing.T) {
+	storage, dir := setupFileSystem()
+
+	dirInode := core.AllocateDirectory(storage, dir, "root lv1 dir1")
+
+	dir, _ = core.EnterDirectory(storage, dir, "root lv1 dir1")
+	core.AllocateDirectory(storage, dir, "root lv2 dir1")
+	dir, _ = core.EnterDirectory(storage, dir, "root lv2 dir1")
+	core.AllocateFile(storage, dir, "root lv2 f1", "hello there")
+	dir, _ = core.EnterDirectory(storage, dir, "..")
+	dir, _ = core.EnterDirectory(storage, dir, "..")
+
+	core.DeleteDirectory(storage, dir, dirInode)
+	resultNonExistant := core.ReadDirectory(storage, dirInode)
+
+	if resultNonExistant != nil {
+		t.Errorf("got %q, want %q", resultNonExistant, "nil")
+	}
+
+	fileInode1 := core.AllocateFile(storage, dir, "test file", "test content")
+	fileInode2 := core.AllocateFile(storage, dir, "test file 2", "test content")
+	if fileInode1 != 2 || fileInode2 != 3 {
+		t.Errorf("got %d, want %d", []int{fileInode1, fileInode2}, []int{2, 3})
+	}
+}

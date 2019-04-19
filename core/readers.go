@@ -61,6 +61,13 @@ func ReadContent(storage []byte, metadata *structures.Metadata, inodeInfo *struc
 
 //ReadFile returns file content
 func ReadFile(storage []byte, inode int) string {
+	defer func() []structures.DirectoryEntry {
+		if r := recover(); r == nil {
+			fmt.Println("read directory: inode does not exist")
+		}
+		return nil
+	}()
+
 	if inode == 0 {
 		fmt.Println("read file: inode cannot be 0")
 		return ""
@@ -77,6 +84,13 @@ func ReadFile(storage []byte, inode int) string {
 
 //ReadDirectory returns directory content
 func ReadDirectory(storage []byte, inode int) []structures.DirectoryEntry {
+	defer func() []structures.DirectoryEntry {
+		if r := recover(); r == nil {
+			fmt.Println("read directory: inode does not exist")
+		}
+		return nil
+	}()
+
 	if inode == 0 {
 		fmt.Println("read directory: inode cannot be 0")
 		return nil

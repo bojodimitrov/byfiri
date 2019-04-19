@@ -11,8 +11,8 @@ import (
 func setupFileSystem() ([]byte, *structures.DirectoryIterator) {
 	size := 512 * 1048576
 	storage := core.InitFsSpace(size)
-	currentDir := core.AllocateAllStructures(storage, size, structures.DefaultBlockSize)
-	return storage, currentDir
+	root := core.AllocateAllStructures(storage, size, structures.DefaultBlockSize)
+	return storage, root
 }
 
 func TestRoot(t *testing.T) {

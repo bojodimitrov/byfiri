@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/bojodimitrov/byfiri/core"
+	"github.com/bojodimitrov/byfiri/graphic"
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
@@ -27,6 +28,11 @@ import (
 //				The space where the data blocks will be stored
 // Current planned structure of the file system array:
 // [[FS Metadata] [Inodes bitmap] [Inodes array] [Free space bitmap] [Data blocks]]
+
+// ** Future features **
+//	-CLI
+//	-Graphic tree display
+//	-Statistics
 
 func readArgs() (int, int) {
 	if !checkArguments() {
@@ -81,7 +87,7 @@ func main() {
 	storage := core.InitFsSpace(size)
 	dir := core.AllocateAllStructures(storage, size, blockSize)
 
-	inodae := core.AllocateDirectory(storage, dir, "root lv1 dir1")
+	core.AllocateDirectory(storage, dir, "root lv1 dir1")
 	core.AllocateDirectory(storage, dir, "root lv1 dir2")
 	core.AllocateFile(storage, dir, "root lv1 f1", "man of culture")
 
@@ -95,17 +101,10 @@ func main() {
 
 	dir, _ = core.EnterDirectory(storage, dir, "..")
 	dir, _ = core.EnterDirectory(storage, dir, "..")
-	core.DeleteDirectory(storage, dir, inodae)
-	inode := core.AllocateFile(storage, dir, "bleh", "bleh")
-	inode2 := core.AllocateFile(storage, dir, "bleh1", "thanos did nothing wrong 22323")
-	inode3 := core.AllocateFile(storage, dir, "bleh2", "thanos did nothing wrong 324234 324 ")
-	inode4 := core.AllocateFile(storage, dir, "bleh3", "thanos did nothing wrong 234f ssdf ")
-	inode5 := core.AllocateFile(storage, dir, "bleh4", "thanos did nothing wrong sdffsd s e r3")
-	fmt.Println(core.ReadDirectory(storage, dir.DirectoryInode))
-	fmt.Println(inode, inode2, inode3, inode4, inode5)
-	fmt.Println(core.ReadFile(storage, inode))
-	fmt.Println(core.ReadFile(storage, inode2))
-	fmt.Println(core.ReadFile(storage, inode3))
-	fmt.Println(core.ReadFile(storage, inode4))
-	fmt.Println(core.ReadFile(storage, inode5))
+	core.AllocateFile(storage, dir, "bleh", "bleh")
+	core.AllocateFile(storage, dir, "bleh1", "thanos did nothing wrong 22323")
+	core.AllocateFile(storage, dir, "bleh2", "thanos did nothing wrong 324234 324 ")
+	core.AllocateFile(storage, dir, "bleh3", "thanos did nothing wrong 234f ssdf ")
+	core.AllocateFile(storage, dir, "bleh4", "thanos did nothing wrong sdffsd s e r3")
+	graphic.DisplayDirectoryTree(storage, dir)
 }

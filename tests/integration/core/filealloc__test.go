@@ -59,3 +59,36 @@ func TestFileAllocationConsequtiveInodes(t *testing.T) {
 		t.Errorf("got %d, want %d", []int{int(rootContent.Inode), fileInode1, fileInode2, fileInode3}, []int{1, 2, 3, 4})
 	}
 }
+
+func TestDirectoryAllocation(t *testing.T) {
+	storage, root := setupFileSystem()
+	dirInode := core.AllocateDirectory(storage, root, "test dir")
+	result := core.ReadDirectory(storage, dirInode)
+	expected := []structures.DirectoryEntry{
+		structures.DirectoryEntry{FileName: ".", Inode: uint32(dirInode)},
+		structures.DirectoryEntry{FileName: "..", Inode: uint32(root.DirectoryInode)},
+	}
+	for i, entry := range result {
+		if entry.FileName != expected[i].FileName || entry.Inode != expected[i].Inode {
+			t.Errorf("got %q, want %q", result, expected)
+		}
+	}
+}
+
+func TestFilesInDirectory(t *testing.T) {
+	storage, root := setupFileSystem()
+	dirInode := core.AllocateDirectory(storage, root, "test dir")
+	fileInode := core.AllocateFile(storage, root, "test file", "file content")
+	result := core.ReadDirectory(storage, root.DirectoryInode)
+	expected := []structures.DirectoryEntry{
+		structures.DirectoryEntry{FileName: ".", Inode: uint32(root.DirectoryInode)},
+		structures.DirectoryEntry{FileName: "..", Inode: 0},
+		structures.DirectoryEntry{FileName: "test dir", Inode: uint32(dirInode)},
+		structures.DirectoryEntry{FileName: "test file", Inode: uint32(fileInode)},
+	}
+	for i, entry := range result {
+		if entry.FileName != expected[i].FileName || entry.Inode != expected[i].Inode {
+			t.Errorf("got %q, want %q", result, expected)
+		}
+	}
+}

@@ -80,19 +80,19 @@ func checkArguments() bool {
 func main() {
 	size, blockSize := readArgs()
 	storage := core.InitFsSpace(size)
-	root := core.AllocateAllStructures(storage, size, blockSize)
-	inode := core.AllocateDirectory(storage, root, "bojo")
+	dir := core.AllocateAllStructures(storage, size, blockSize)
+	inode := core.AllocateDirectory(storage, dir, "bojo")
 	fmt.Println(core.ReadDirectory(storage, inode))
 
-	bojo, _ := navigator.EnterDirectory(storage, root, "bojo")
-	core.AllocateFile(storage, bojo, "bojo_file_1", "bojo e gotin")
-	core.AllocateFile(storage, bojo, "bojo_file_2", "bojo e gotin")
-	core.AllocateFile(storage, bojo, "bojo_file_3", "bojo e gotin")
+	dir, _ = navigator.EnterDirectory(storage, dir, "bojo")
+	core.AllocateFile(storage, dir, "bojo_file_1", "bojo e gotin")
+	core.AllocateFile(storage, dir, "bojo_file_2", "bojo e gotin")
+	core.AllocateFile(storage, dir, "bojo_file_3", "bojo e gotin")
 	fmt.Println(core.ReadDirectory(storage, inode))
 
-	bojo, _ = navigator.EnterDirectory(storage, bojo, ".")
+	dir, _ = navigator.EnterDirectory(storage, dir, ".")
 	fmt.Println(core.ReadDirectory(storage, inode))
 
-	root, _ = navigator.EnterDirectory(storage, bojo, "..")
+	dir, _ = navigator.EnterDirectory(storage, dir, "..")
 	fmt.Println(core.ReadDirectory(storage, 1))
 }

@@ -6,9 +6,9 @@ to start it run **go build** and after that **byfiry.exe {size} {size abbreviati
 
 ## CLI Commands:
 
--   **open** {name}
+-   **open** {name/path}
 
-expects file or directory name as parameter. If name is file prints content, if it is directory: enters the directory
+expects file, directory name or path as parameter. If name is file prints content, if it is directory: enters the directory
 
 -   **make** {f/d} {name}
 

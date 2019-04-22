@@ -13,6 +13,7 @@ expects file or directory name as parameter. If name is file prints content, if 
 -   **make** {f/d} {name}
 
 with option f: creates file with given name and starts reading user input that will be the content of the file. Exiting is performed by typing ':q' or ':Q' on new line
+
 with option d: creates empty directory with given name
 
 -   **del** {name}

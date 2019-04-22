@@ -217,7 +217,6 @@ func addBlockIdsInInode(inodeInfo *structures.Inode, blocks []int) {
 }
 
 func createRoot(storage []byte) *structures.DirectoryIterator {
-	fmt.Println("creating root")
 	content := []structures.DirectoryEntry{structures.DirectoryEntry{FileName: ".", Inode: 1}, structures.DirectoryEntry{FileName: "..", Inode: 0}}
 
 	fsdata := ReadMetadata(storage)

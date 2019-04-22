@@ -41,8 +41,8 @@ func AllocateFile(storage []byte, currentDirectory *structures.DirectoryIterator
 		fmt.Println("allocate file: name already exists")
 		return 0
 	}
-	if strings.ContainsAny(name, "\\: ") {
-		fmt.Println("allocate file: name cannot contain ", []string{"'\\'", "' '", "':'"})
+	if strings.ContainsAny(name, "\\:") {
+		fmt.Println("allocate file: name cannot contain ", []string{"'\\'", "':'"})
 		return 0
 	}
 

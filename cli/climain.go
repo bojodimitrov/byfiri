@@ -20,8 +20,7 @@ func Start(storage []byte, currentDirectory *structures.DirectoryIterator) {
 		fmt.Println(core.GetPath(storage, currentDirectory))
 		fmt.Print("->")
 		scanner.Scan()
-		// text = text[:len(text)-2]
-		commands := strings.Fields(scanner.Text())
+		commands := parseInput(scanner.Text())
 
 		action := parseCommand(commands[0])
 
@@ -196,4 +195,28 @@ func getFileContent() string {
 		}
 	}
 	return content.String()
+}
+
+func parseInput(command string) []string {
+	if strings.Count(command, "\"")%2 == 1 {
+		return []string{""}
+	}
+	var content strings.Builder
+	fields := []string{}
+	ignoreSpaces := false
+	for _, char := range command {
+		if char == ' ' && !ignoreSpaces {
+			fields = append(fields, content.String())
+			content.Reset()
+		}
+		if char == '"' {
+			ignoreSpaces = !ignoreSpaces
+		}
+		content.WriteRune(char)
+	}
+	fields = append(fields, content.String())
+	for i, field := range fields {
+		fields[i] = strings.Trim(field, " \"")
+	}
+	return fields
 }

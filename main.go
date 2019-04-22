@@ -31,7 +31,8 @@ import (
 // [[FS Metadata] [Inodes bitmap] [Inodes array] [Free space bitmap] [Data blocks]]
 
 // ** Future features **
-//	-CLI
+//	-File size
+//	-Different sorting
 //	-Statistics
 
 func readArgs() (int, int) {
@@ -103,6 +104,5 @@ func main() {
 	dir, _ = core.EnterDirectory(storage, dir, "..")
 
 	graphic.DisplayDirectoryTree(storage, dir)
-
 	cli.Start(storage, dir)
 }

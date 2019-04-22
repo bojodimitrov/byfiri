@@ -98,6 +98,22 @@ func UpdateFile(storage []byte, inode int, content string) {
 	updateInode(storage, fsdata, inodeInfo, inode)
 }
 
+//RenameFile renames file
+func RenameFile(storage []byte, currentDirectory *structures.DirectoryIterator, inode int, newName string) {
+	if inode == 0 {
+		fmt.Println("rename file: inode cannot be 0")
+		return
+	}
+	for i, dirEntry := range currentDirectory.DirectoryContent {
+		if dirEntry.Inode == uint32(inode) {
+			currentDirectory.DirectoryContent[i].FileName = newName
+			UpdateDirectory(storage, currentDirectory.DirectoryInode, currentDirectory.DirectoryContent)
+			return
+		}
+	}
+	fmt.Println("rename file: file not found")
+}
+
 //UpdateDirectory updates file content
 func UpdateDirectory(storage []byte, inode int, content []structures.DirectoryEntry) {
 	if inode == 0 {

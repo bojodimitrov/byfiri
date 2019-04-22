@@ -42,7 +42,7 @@ func DisplayDirectoryTree(storage []byte, currentDirectory *structures.Directory
 				currentDirName = value.FileName
 			}
 		}
-		fmt.Println(currentDirName)
+		fmt.Println(currentDirName + ":")
 	}
 	iterateDirectoryRecursively(storage, fsdata, currentDirectory, 0)
 }

@@ -63,7 +63,7 @@ func ReadContent(storage []byte, metadata *structures.Metadata, inodeInfo *struc
 func ReadFile(storage []byte, inode int) string {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("read directory: inode does not exist")
+			fmt.Println("read file: inode does not exist")
 		}
 	}()
 

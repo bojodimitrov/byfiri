@@ -39,3 +39,5 @@ prints the contents of the current directory tree
 -   **exit**
 
 exits byfiri
+
+_If file or directory name contains spaces, name string should be surrounded by quotes: "file name"_

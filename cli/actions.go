@@ -46,7 +46,16 @@ func open(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 	}
 	var err error
 	if strings.Contains(commands[1], "\\") {
-		currentDirectory, err = core.EnterDirectory(storage, currentDirectory, commands[1])
+		preserveCurrent := currentDirectory
+		path := strings.Split(commands[1], "\\")
+		for _, value := range path {
+			if core.IsDirectory(storage, currentDirectory, value) {
+				currentDirectory, err = core.EnterDirectory(storage, currentDirectory, value)
+			} else {
+				fmt.Print(core.ReadFile(storage, core.GetInode(storage, currentDirectory, value)))
+				return preserveCurrent
+			}
+		}
 	} else {
 		if core.IsDirectory(storage, currentDirectory, commands[1]) {
 			currentDirectory, err = core.EnterDirectory(storage, currentDirectory, commands[1])

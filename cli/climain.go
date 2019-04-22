@@ -19,7 +19,7 @@ func Start(storage []byte, currentDirectory *structures.DirectoryIterator) {
 		fmt.Println(core.GetPath(storage, currentDirectory))
 		fmt.Print("->")
 		scanner.Scan()
-		commands := parseInput(scanner.Text())
+		commands := parseInput(strings.Trim(scanner.Text(), " "))
 
 		action := parseCommand(commands[0])
 

@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/bojodimitrov/byfiri/diracts"
 	"github.com/bojodimitrov/byfiri/structures"
@@ -37,7 +38,11 @@ func calculateNumberOfBlocks(freeSpace int, blockSize int) int {
 // AllocateFile writes a file on storage
 func AllocateFile(storage []byte, currentDirectory *structures.DirectoryIterator, name string, content string) int {
 	if fileAlreadyExists(currentDirectory.DirectoryContent, name) {
-		fmt.Println("allocate directory: name already exists")
+		fmt.Println("allocate file: name already exists")
+		return 0
+	}
+	if strings.ContainsAny(name, "\\: ") {
+		fmt.Println("allocate file: name cannot contain ", []string{"'\\'", "' '", "':'"})
 		return 0
 	}
 

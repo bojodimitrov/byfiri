@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/bojodimitrov/byfiri/diracts"
 	"github.com/bojodimitrov/byfiri/structures"
@@ -102,6 +103,10 @@ func UpdateFile(storage []byte, inode int, content string) {
 func RenameFile(storage []byte, currentDirectory *structures.DirectoryIterator, inode int, newName string) {
 	if inode == 0 {
 		fmt.Println("rename file: inode cannot be 0")
+		return
+	}
+	if strings.ContainsAny(newName, "\\: ") {
+		fmt.Println("rename file: name cannot contain ", []string{"'\\'", "' '", "':'"})
 		return
 	}
 	for i, dirEntry := range currentDirectory.DirectoryContent {

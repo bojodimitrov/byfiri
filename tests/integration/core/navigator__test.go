@@ -17,3 +17,19 @@ func TestEnterDirectory(t *testing.T) {
 		t.Errorf("got %d, want %d", currentDir.DirectoryInode, dirInode)
 	}
 }
+
+func TestEnterDirectoryPath(t *testing.T) {
+	storage, currentDir := setupFileSystem()
+
+	core.AllocateDirectory(storage, currentDir, "dir")
+
+	currentDir, _ = core.EnterDirectory(storage, currentDir, "dir")
+
+	dirInode := core.AllocateDirectory(storage, currentDir, "dir")
+
+	currentDir, _ = core.EnterDirectory(storage, currentDir, "dir")
+
+	if currentDir.DirectoryInode != dirInode {
+		t.Errorf("got %d, want %d", currentDir.DirectoryInode, dirInode)
+	}
+}

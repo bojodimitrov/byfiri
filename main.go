@@ -7,7 +7,6 @@ import (
 
 	"github.com/bojodimitrov/byfiri/cli"
 	"github.com/bojodimitrov/byfiri/core"
-	"github.com/bojodimitrov/byfiri/graphic"
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
@@ -87,22 +86,5 @@ func main() {
 	size, blockSize := readArgs()
 	storage := core.InitFsSpace(size)
 	dir := core.AllocateAllStructures(storage, size, blockSize)
-
-	core.AllocateDirectory(storage, dir, "lv1dir1")
-	core.AllocateDirectory(storage, dir, "lv1dir2")
-	core.AllocateFile(storage, dir, "lv1f1", "man of culture")
-
-	dir, _ = core.EnterDirectory(storage, dir, "lv1dir1")
-	core.AllocateDirectory(storage, dir, "lv2dir1")
-	core.AllocateFile(storage, dir, "lv2f1", "hello there")
-	core.AllocateFile(storage, dir, "lv2f2", "thanos did nothing wrong")
-
-	dir, _ = core.EnterDirectory(storage, dir, "lv2dir1")
-	core.AllocateFile(storage, dir, "lv3f1", "i am the senate")
-
-	dir, _ = core.EnterDirectory(storage, dir, "..")
-	dir, _ = core.EnterDirectory(storage, dir, "..")
-
-	graphic.DisplayDirectoryTree(storage, dir)
 	cli.Start(storage, dir)
 }

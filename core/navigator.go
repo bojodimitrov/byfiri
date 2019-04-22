@@ -2,25 +2,12 @@ package core
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
 // EnterDirectory returns DirectoryIterator of the desired directory within current directory
-func EnterDirectory(storage []byte, current *structures.DirectoryIterator, path string) (*structures.DirectoryIterator, error) {
-	fields := strings.Split(path, "\\")
-	var err error
-	for _, directory := range fields {
-		current, err = navigate(storage, current, directory)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return current, nil
-}
-
-func navigate(storage []byte, current *structures.DirectoryIterator, directory string) (*structures.DirectoryIterator, error) {
+func EnterDirectory(storage []byte, current *structures.DirectoryIterator, directory string) (*structures.DirectoryIterator, error) {
 	currentDirectoryContent := ReadDirectory(storage, current.DirectoryInode)
 	inode := 0
 	for _, dirEntry := range currentDirectoryContent {

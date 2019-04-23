@@ -10,9 +10,19 @@ import (
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
+const helpOption = "-h"
+
 func list(storage []byte, currentDirectory *structures.DirectoryIterator, commands []string) *structures.DirectoryIterator {
-	if len(commands) != 1 {
+	if len(commands) > 2 {
 		fmt.Println("too many parameters:", commands[1:])
+		return currentDirectory
+	}
+	if len(commands) == 2 {
+		if strings.HasPrefix(commands[1], "-") {
+			printHelp(commands, listHelp)
+		} else {
+			fmt.Println("too many parameters:", commands[1:])
+		}
 		return currentDirectory
 	}
 	for _, entry := range currentDirectory.DirectoryContent {
@@ -22,8 +32,16 @@ func list(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 }
 
 func tree(storage []byte, currentDirectory *structures.DirectoryIterator, commands []string) *structures.DirectoryIterator {
-	if len(commands) != 1 {
+	if len(commands) > 2 {
 		fmt.Println("too many parameters:", commands[1:])
+		return currentDirectory
+	}
+	if len(commands) == 2 {
+		if strings.HasPrefix(commands[1], "-") {
+			printHelp(commands, treeHelp)
+		} else {
+			fmt.Println("too many parameters:", commands[1:])
+		}
 		return currentDirectory
 	}
 	graphic.DisplayDirectoryTree(storage, currentDirectory)
@@ -31,8 +49,16 @@ func tree(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 }
 
 func exit(_ []byte, currentDirectory *structures.DirectoryIterator, commands []string) *structures.DirectoryIterator {
-	if len(commands) != 1 {
+	if len(commands) > 2 {
 		fmt.Println("too many parameters:", commands[1:])
+		return currentDirectory
+	}
+	if len(commands) == 2 {
+		if strings.HasPrefix(commands[1], "-") {
+			printHelp(commands, exitHelp)
+		} else {
+			fmt.Println("too many parameters:", commands[1:])
+		}
 		return currentDirectory
 	}
 	os.Exit(0)
@@ -42,6 +68,10 @@ func exit(_ []byte, currentDirectory *structures.DirectoryIterator, commands []s
 func open(storage []byte, currentDirectory *structures.DirectoryIterator, commands []string) *structures.DirectoryIterator {
 	if len(commands) > 2 {
 		fmt.Println("too many parameters:", commands[2:])
+		return currentDirectory
+	}
+	if len(commands) == 2 && strings.HasPrefix(commands[1], "-") {
+		printHelp(commands, openHelp)
 		return currentDirectory
 	}
 	var err error
@@ -74,6 +104,10 @@ func edit(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 		fmt.Println("too many parameters:", commands[2:])
 		return currentDirectory
 	}
+	if len(commands) == 2 && strings.HasPrefix(commands[1], "-") {
+		printHelp(commands, editHelp)
+		return currentDirectory
+	}
 	if core.IsDirectory(storage, currentDirectory, commands[1]) {
 		fmt.Println("edit: cannot edit directory")
 		return currentDirectory
@@ -90,7 +124,11 @@ func make(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 		return currentDirectory
 	}
 	if len(commands) == 2 {
-		fmt.Println("name must be provided")
+		if commands[1] == helpOption {
+			fmt.Println(makeHelp)
+		} else {
+			fmt.Println("name must be provided")
+		}
 		return currentDirectory
 	}
 	if len(commands) > 3 {
@@ -119,6 +157,10 @@ func delete(storage []byte, currentDirectory *structures.DirectoryIterator, comm
 		fmt.Println("too many parameters:", commands[2:])
 		return currentDirectory
 	}
+	if len(commands) == 2 && strings.HasPrefix(commands[1], "-") {
+		printHelp(commands, deleteHelp)
+		return currentDirectory
+	}
 	if core.IsDirectory(storage, currentDirectory, commands[1]) {
 		core.DeleteDirectory(storage, currentDirectory, core.GetInode(storage, currentDirectory, commands[1]))
 	} else {
@@ -133,6 +175,10 @@ func rename(storage []byte, currentDirectory *structures.DirectoryIterator, comm
 		fmt.Println("new file name must be provided")
 		return currentDirectory
 	}
+	if len(commands) == 2 && strings.HasPrefix(commands[1], "-") {
+		printHelp(commands, renameHelp)
+		return currentDirectory
+	}
 	if len(commands) == 2 {
 		fmt.Println("new file name must be provided")
 		return currentDirectory
@@ -143,4 +189,10 @@ func rename(storage []byte, currentDirectory *structures.DirectoryIterator, comm
 	}
 	core.RenameFile(storage, currentDirectory, core.GetInode(storage, currentDirectory, commands[1]), commands[2])
 	return currentDirectory
+}
+
+func printHelp(commands []string, help string) {
+	if commands[1] == helpOption {
+		fmt.Println(help)
+	}
 }

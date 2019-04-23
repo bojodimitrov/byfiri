@@ -40,4 +40,8 @@ prints the contents of the current directory tree
 
 exits byfiri
 
+-   **{command} -h**
+
+help: prints some information about the command
+
 _If file or directory name contains spaces, name string should be surrounded by quotes: "file name"_

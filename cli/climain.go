@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/bojodimitrov/byfiri/core"
@@ -77,6 +78,9 @@ func parseInput(command string) []string {
 	var content strings.Builder
 	fields := []string{}
 	ignoreSpaces := false
+
+	spaceRepetitions := regexp.MustCompile(`\s+`)
+	command = spaceRepetitions.ReplaceAllString(command, " ")
 	for _, char := range command {
 		if char == ' ' && !ignoreSpaces {
 			fields = append(fields, content.String())

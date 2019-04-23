@@ -29,5 +29,5 @@ const (
 )
 
 func (s MakeParameters) String() string {
-	return [...]string{"f", "d"}[s]
+	return [...]string{"-f", "-d"}[s]
 }

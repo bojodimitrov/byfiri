@@ -79,7 +79,13 @@ func open(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 		preserveCurrent := currentDirectory
 		path := strings.Split(commands[1], "\\")
 		for _, value := range path {
-			if core.IsDirectory(storage, currentDirectory, value) {
+			isDir, err := core.IsDirectory(storage, currentDirectory, commands[1])
+			if err != nil {
+				//Log err
+				fmt.Println("open: could not read file")
+				return currentDirectory
+			}
+			if isDir {
 				currentDirectory, err = core.EnterDirectory(storage, currentDirectory, value)
 			} else {
 				fmt.Print(core.ReadFile(storage, core.GetInode(storage, currentDirectory, value)))
@@ -87,10 +93,20 @@ func open(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 			}
 		}
 	} else {
-		if core.IsDirectory(storage, currentDirectory, commands[1]) {
+		isDir, err := core.IsDirectory(storage, currentDirectory, commands[1])
+		if err != nil {
+			//Log err
+			fmt.Println("open: could not read file")
+			return currentDirectory
+		}
+		if isDir {
 			currentDirectory, err = core.EnterDirectory(storage, currentDirectory, commands[1])
 		} else {
-			fmt.Print(core.ReadFile(storage, core.GetInode(storage, currentDirectory, commands[1])))
+			content, err := core.ReadFile(storage, core.GetInode(storage, currentDirectory, commands[1]))
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Print(content)
 		}
 	}
 	if err != nil {
@@ -108,7 +124,13 @@ func edit(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 		printHelp(commands, editHelp)
 		return currentDirectory
 	}
-	if core.IsDirectory(storage, currentDirectory, commands[1]) {
+	value, err := core.IsDirectory(storage, currentDirectory, commands[1])
+	if err != nil {
+		//Log err
+		fmt.Println("edit: could not read file")
+		return currentDirectory
+	}
+	if value {
 		fmt.Println("edit: cannot edit directory")
 		return currentDirectory
 	}
@@ -137,7 +159,10 @@ func make(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 	}
 	switch commands[1] {
 	case File.String():
-		core.AllocateFile(storage, currentDirectory, commands[2], getFileContent())
+		_, err := core.AllocateFile(storage, currentDirectory, commands[2], getFileContent())
+		if err != nil {
+			fmt.Println(err)
+		}
 	case Directory.String():
 		core.AllocateDirectory(storage, currentDirectory, commands[2])
 	default:
@@ -161,7 +186,13 @@ func delete(storage []byte, currentDirectory *structures.DirectoryIterator, comm
 		printHelp(commands, deleteHelp)
 		return currentDirectory
 	}
-	if core.IsDirectory(storage, currentDirectory, commands[1]) {
+	isDir, err := core.IsDirectory(storage, currentDirectory, commands[1])
+	if err != nil {
+		//Log err
+		fmt.Println("delete: could not delete file")
+		return currentDirectory
+	}
+	if isDir {
 		core.DeleteDirectory(storage, currentDirectory, core.GetInode(storage, currentDirectory, commands[1]))
 	} else {
 		core.DeleteFile(storage, currentDirectory, core.GetInode(storage, currentDirectory, commands[1]))

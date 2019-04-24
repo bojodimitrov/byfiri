@@ -8,23 +8,30 @@ import (
 	"github.com/bojodimitrov/byfiri/util"
 
 	"github.com/bojodimitrov/byfiri/diracts"
-	"github.com/bojodimitrov/byfiri/errors"
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
 //ReadInode returns an Inode structure written behind inode location
-func ReadInode(storage []byte, metadata *structures.Metadata, inode int) *structures.Inode {
+func ReadInode(storage []byte, metadata *structures.Metadata, inode int) (*structures.Inode, error) {
 	inodesBeginning := int(metadata.Root)
 	inodeLocation := inodesBeginning + inode*int(structures.InodeSize)
 	//First 3 bytes are mode
 	modeStr := Read(storage, inodeLocation, 3)
 	mode, err := strconv.Atoi(modeStr)
-	errors.CorruptInode(err, inode)
+
+	if err != nil {
+		return nil, fmt.Errorf("read inode: corrupt inode data")
+	}
+
 	inodeLocation += 3
 	//Next 10 bytes are size
 	sizeStr := Read(storage, inodeLocation, 10)
 	size, err := strconv.Atoi(sizeStr)
-	errors.CorruptInode(err, inode)
+
+	if err != nil {
+		return nil, fmt.Errorf("read inode: corrupt inode data")
+	}
+
 	inodeLocation += 10
 
 	var blocksGathered [12]uint32
@@ -32,12 +39,14 @@ func ReadInode(storage []byte, metadata *structures.Metadata, inode int) *struct
 	for i := 0; i < 12; i++ {
 		block := Read(storage, inodeLocation, 10)
 		value, err := strconv.Atoi(block)
-		errors.CorruptInode(err, inode)
+		if err != nil {
+			return nil, fmt.Errorf("read inode: corrupt inode data")
+		}
 		blocksGathered[i] = uint32(value)
 		inodeLocation += 10
 	}
 	inodeInfo := structures.Inode{Mode: uint8(mode), Size: uint32(size), BlocksLocations: blocksGathered}
-	return &inodeInfo
+	return &inodeInfo, nil
 }
 
 //ReadContent reads file content
@@ -60,47 +69,47 @@ func ReadContent(storage []byte, metadata *structures.Metadata, inodeInfo *struc
 }
 
 //ReadFile returns file content
-func ReadFile(storage []byte, inode int) string {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("read file: inode does not exist")
-		}
-	}()
-
+func ReadFile(storage []byte, inode int) (string, error) {
 	if inode == 0 {
-		fmt.Println("read file: inode cannot be 0")
-		return ""
+		return "", fmt.Errorf("read file: inode cannot be 0")
 	}
 
 	fsdata := ReadMetadata(storage)
-	inodeInfo := ReadInode(storage, fsdata, inode)
-	if inodeInfo.Mode == 0 {
-		fmt.Println("update file: file is directory")
-		return ""
+	if !getInodeValue(storage, fsdata, structures.Inodes, inode) {
+		return "", fmt.Errorf("read file: file does not exits")
 	}
-	return ReadContent(storage, fsdata, inodeInfo)
+	inodeInfo, err := ReadInode(storage, fsdata, inode)
+	if err != nil {
+		//Log err
+		return "", fmt.Errorf("read file: could not read inode")
+	}
+	if inodeInfo.Mode == 0 {
+		return "", fmt.Errorf("read file: file is directory")
+	}
+	return ReadContent(storage, fsdata, inodeInfo), nil
 }
 
 //ReadDirectory returns directory content
-func ReadDirectory(storage []byte, inode int) []structures.DirectoryEntry {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("read directory: inode does not exist")
-		}
-	}()
+func ReadDirectory(storage []byte, inode int) ([]structures.DirectoryEntry, error) {
 
 	if inode == 0 {
-		fmt.Println("read directory: inode cannot be 0")
-		return nil
+		return nil, fmt.Errorf("read directory: inode cannot be 0")
 	}
 
 	fsdata := ReadMetadata(storage)
-	inodeInfo := ReadInode(storage, fsdata, inode)
-	if inodeInfo.Mode == 1 {
-		fmt.Println("update directory: directory is file")
-		return nil
+	if !getInodeValue(storage, fsdata, structures.Inodes, inode) {
+		return nil, fmt.Errorf("read directory: directory does not exists")
 	}
+	inodeInfo, err := ReadInode(storage, fsdata, inode)
+	if err != nil {
+		//Log err
+		return nil, fmt.Errorf("read file: could not read inode")
+	}
+	if inodeInfo.Mode == 1 {
+		return nil, fmt.Errorf("update directory: directory is file")
+	}
+
 	content := ReadContent(storage, fsdata, inodeInfo)
 	dirContent := diracts.DecodeDirectoryContent(content)
-	return dirContent
+	return dirContent, nil
 }

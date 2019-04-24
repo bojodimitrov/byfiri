@@ -8,19 +8,28 @@ import (
 )
 
 func TestFileDelete(t *testing.T) {
-	storage, currentDir := setupFileSystem()
+	storage, currentDir := setupFileSystem(t)
 
 	content := "file content"
 
-	fileInode1 := core.AllocateFile(storage, currentDir, "test file", content)
-	fileInode2 := core.AllocateFile(storage, currentDir, "test file 2", content)
+	fileInode1, err := core.AllocateFile(storage, currentDir, "test file", content)
+	if err != nil {
+		t.Errorf("got %q, want %q", err, "nil")
+	}
+	fileInode2, err := core.AllocateFile(storage, currentDir, "test file 2", content)
+	if err != nil {
+		t.Errorf("got %q, want %q", err, "nil")
+	}
 
 	if fileInode1 != 2 || fileInode2 != 3 {
 		t.Errorf("got %d, want %d", []int{fileInode1, fileInode2}, []int{2, 3})
 	}
 	core.DeleteFile(storage, currentDir, fileInode1)
 
-	fileInode3 := core.AllocateFile(storage, currentDir, "test file 3", content)
+	fileInode3, err := core.AllocateFile(storage, currentDir, "test file 3", content)
+	if err != nil {
+		t.Errorf("got %q, want %q", err, "nil")
+	}
 
 	if fileInode3 != 2 || fileInode2 != 3 {
 		t.Errorf("got %d, want %d", []int{fileInode3, fileInode2}, []int{2, 3})
@@ -28,12 +37,18 @@ func TestFileDelete(t *testing.T) {
 }
 
 func TestFileDeleteInDirectory(t *testing.T) {
-	storage, root := setupFileSystem()
+	storage, root := setupFileSystem(t)
 
 	content := "file content"
 
-	fileInode := core.AllocateFile(storage, root, "test file", content)
-	resultWithFile := core.ReadDirectory(storage, root.DirectoryInode)
+	fileInode, err := core.AllocateFile(storage, root, "test file", content)
+	if err != nil {
+		t.Errorf("got %q, want %q", err, "nil")
+	}
+	resultWithFile, err := core.ReadDirectory(storage, root.DirectoryInode)
+	if err != nil {
+		t.Errorf("got %q, want %q", err, "nil")
+	}
 	addedFile := []structures.DirectoryEntry{
 		structures.DirectoryEntry{FileName: ".", Inode: uint32(root.DirectoryInode)},
 		structures.DirectoryEntry{FileName: "..", Inode: 0},
@@ -45,7 +60,10 @@ func TestFileDeleteInDirectory(t *testing.T) {
 		}
 	}
 	core.DeleteFile(storage, root, fileInode)
-	resultNoFile := core.ReadDirectory(storage, root.DirectoryInode)
+	resultNoFile, err := core.ReadDirectory(storage, root.DirectoryInode)
+	if err != nil {
+		t.Errorf("got %q, want %q", err, "nil")
+	}
 	noFile := []structures.DirectoryEntry{
 		structures.DirectoryEntry{FileName: ".", Inode: uint32(root.DirectoryInode)},
 		structures.DirectoryEntry{FileName: "..", Inode: 0},
@@ -58,9 +76,12 @@ func TestFileDeleteInDirectory(t *testing.T) {
 }
 
 func TestDeleteDirectory(t *testing.T) {
-	storage, dir := setupFileSystem()
+	storage, dir := setupFileSystem(t)
 
-	dirInode := core.AllocateDirectory(storage, dir, "root lv1 dir1")
+	dirInode, err := core.AllocateDirectory(storage, dir, "root lv1 dir1")
+	if err != nil {
+		t.Errorf("got %q, want %q", err, "nil")
+	}
 
 	dir, _ = core.EnterDirectory(storage, dir, "root lv1 dir1")
 	core.AllocateDirectory(storage, dir, "root lv2 dir1")
@@ -70,14 +91,19 @@ func TestDeleteDirectory(t *testing.T) {
 	dir, _ = core.EnterDirectory(storage, dir, "..")
 
 	core.DeleteDirectory(storage, dir, dirInode)
-	resultNonExistant := core.ReadDirectory(storage, dirInode)
-
-	if resultNonExistant != nil {
-		t.Errorf("got %q, want %q", resultNonExistant, "nil")
+	_, err = core.ReadDirectory(storage, dirInode)
+	if err == nil {
+		t.Errorf("got %q, want %q", err, "read directory: directory does not exits")
 	}
 
-	fileInode1 := core.AllocateFile(storage, dir, "test file", "test content")
-	fileInode2 := core.AllocateFile(storage, dir, "test file 2", "test content")
+	fileInode1, err := core.AllocateFile(storage, dir, "test file", "test content")
+	if err != nil {
+		t.Errorf("got %q, want %q", err, "nil")
+	}
+	fileInode2, err := core.AllocateFile(storage, dir, "test file 2", "test content")
+	if err != nil {
+		t.Errorf("got %q, want %q", err, "nil")
+	}
 	if fileInode1 != 2 || fileInode2 != 3 {
 		t.Errorf("got %d, want %d", []int{fileInode1, fileInode2}, []int{2, 3})
 	}

@@ -36,35 +36,34 @@ func calculateNumberOfBlocks(freeSpace int, blockSize int) int {
 }
 
 // AllocateFile writes a file on storage
-func AllocateFile(storage []byte, currentDirectory *structures.DirectoryIterator, name string, content string) int {
+func AllocateFile(storage []byte, currentDirectory *structures.DirectoryIterator, name string, content string) (int, error) {
 	if fileAlreadyExists(currentDirectory.DirectoryContent, name) {
-		fmt.Println("allocate file: name already exists")
-		return 0
+		return 0, fmt.Errorf("allocate file: name already exists")
 	}
 	if strings.ContainsAny(name, "\\:-") {
-		fmt.Println("allocate file: name cannot contain ", []string{"'\\'", "':'", "'-'"})
-		return 0
+		return 0, fmt.Errorf("allocate file: name cannot contain %q", []string{"'\\'", "':'", "'-'"})
 	}
 
 	fsdata := ReadMetadata(storage)
 	blocksGathered, err := allocateContent(storage, fsdata, content)
 	if err != nil {
-		fmt.Println(err)
-		return 0
+		return 0, err
 	}
 	inodeInfo := structures.Inode{Mode: 1, Size: uint32(len(content)), BlocksLocations: [12]uint32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
 	addBlockIdsInInode(&inodeInfo, blocksGathered)
 
-	inode := allocateInode(storage, fsdata, &inodeInfo)
+	inode, err := allocateInode(storage, fsdata, &inodeInfo)
+	if err != nil {
+		return 0, err
+	}
 	addFileToDirectory(storage, currentDirectory, &structures.DirectoryEntry{FileName: name, Inode: uint32(inode)})
-	return inode
+	return inode, nil
 }
 
 // AllocateDirectory writes a directory on storage
-func AllocateDirectory(storage []byte, currentDirectory *structures.DirectoryIterator, name string) int {
+func AllocateDirectory(storage []byte, currentDirectory *structures.DirectoryIterator, name string) (int, error) {
 	if fileAlreadyExists(currentDirectory.DirectoryContent, name) {
-		fmt.Println("allocate directory: name already exists")
-		return 0
+		return 0, fmt.Errorf("allocate directory: name already exists")
 	}
 
 	fsdata := ReadMetadata(storage)
@@ -73,32 +72,32 @@ func AllocateDirectory(storage []byte, currentDirectory *structures.DirectoryIte
 		structures.DirectoryEntry{FileName: "..", Inode: uint32(currentDirectory.DirectoryInode)}}
 	encoded, err := diracts.EncodeDirectoryContent(content)
 	if err != nil {
-		fmt.Println(err)
-		return 0
+		return 0, err
 	}
 	blocksGathered, err := allocateContent(storage, fsdata, encoded)
 	if err != nil {
-		fmt.Println(err)
-		return 0
+		return 0, err
 	}
 	inodeInfo := structures.Inode{Mode: 0, Size: uint32(len(encoded)), BlocksLocations: [12]uint32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
 	addBlockIdsInInode(&inodeInfo, blocksGathered)
 
-	inode := allocateInode(storage, fsdata, &inodeInfo)
+	inode, err := allocateInode(storage, fsdata, &inodeInfo)
+	if err != nil {
+		return 0, err
+	}
 	content[0].Inode = uint32(inode)
 
 	encoded, err = diracts.EncodeDirectoryContent(content)
 	if err != nil {
-		fmt.Println(err)
-		return 0
+		return 0, err
 	}
 	updateContent(storage, fsdata, &inodeInfo, encoded)
 	addFileToDirectory(storage, currentDirectory, &structures.DirectoryEntry{FileName: name, Inode: uint32(inode)})
-	return inode
+	return inode, nil
 }
 
 // AllocateAllStructures writes all basic structures on storage
-func AllocateAllStructures(storage []byte, size int, blockSize int) *structures.DirectoryIterator {
+func AllocateAllStructures(storage []byte, size int, blockSize int) (*structures.DirectoryIterator, error) {
 	inodesCount := calculateInodesCount(size, blockSize)
 	inodes := calculateInodesSpace(inodesCount)
 	numberOfBlocks := uint32(calculateNumberOfBlocks(size, blockSize))
@@ -111,8 +110,11 @@ func AllocateAllStructures(storage []byte, size int, blockSize int) *structures.
 		FreeSpaceMap: structures.MetadataSize + uint32(inodesCount)/8 + uint32(inodes),
 		FirstBlock:   structures.MetadataSize + uint32(inodesCount)/8 + uint32(inodes) + numberOfBlocks/8}
 	allocateMetadata(storage, &fsdata)
-	root := createRoot(storage)
-	return root
+	root, err := createRoot(storage)
+	if err != nil {
+		return nil, err
+	}
+	return root, nil
 }
 
 // InitFsSpace creates storage array in memory
@@ -130,11 +132,15 @@ func fileAlreadyExists(content []structures.DirectoryEntry, name string) bool {
 	return false
 }
 
-func addFileToDirectory(storage []byte, current *structures.DirectoryIterator, file *structures.DirectoryEntry) {
-	content := ReadDirectory(storage, current.DirectoryInode)
+func addFileToDirectory(storage []byte, current *structures.DirectoryIterator, file *structures.DirectoryEntry) error {
+	content, err := ReadDirectory(storage, current.DirectoryInode)
+	if err != nil {
+		return err
+	}
 	content = append(content, *file)
 	UpdateDirectory(storage, current.DirectoryInode, content)
 	current.DirectoryContent = append(current.DirectoryContent, *file)
+	return nil
 }
 
 func allocateMetadata(storage []byte, fsdata *structures.Metadata) {
@@ -148,11 +154,10 @@ func allocateMetadata(storage []byte, fsdata *structures.Metadata) {
 	Write(storage, fmt.Sprint(fsdata.FirstBlock), 80)
 }
 
-func allocateInode(storage []byte, fsdata *structures.Metadata, inodeInfo *structures.Inode) int {
+func allocateInode(storage []byte, fsdata *structures.Metadata, inodeInfo *structures.Inode) (int, error) {
 	freeInode, err := findFreeBitmapPosition(storage, fsdata, structures.Inodes, []int{})
 	if err != nil {
-		fmt.Println(err)
-		return 0
+		return 0, err
 	}
 
 	inodesBeginning := int(fsdata.Root)
@@ -167,7 +172,7 @@ func allocateInode(storage []byte, fsdata *structures.Metadata, inodeInfo *struc
 		offset += 10
 	}
 	markOnBitmap(storage, fsdata, true, freeInode, structures.Inodes)
-	return freeInode
+	return freeInode, nil
 }
 
 func allocateContent(storage []byte, fsdata *structures.Metadata, content string) ([]int, error) {
@@ -196,7 +201,7 @@ func allocateContent(storage []byte, fsdata *structures.Metadata, content string
 }
 
 func findFreeBitmapPosition(storage []byte, fsdata *structures.Metadata, bitmap structures.Bitmap, inMemoryTakenPositions []int) (int, error) {
-	inodesBitmap := GetBitmap(storage, fsdata, bitmap)
+	inodesBitmap := getBitmap(storage, fsdata, bitmap)
 	freePosition := -1
 	for i, val := range inodesBitmap {
 		if i != 0 && val == false && !util.Contains(inMemoryTakenPositions, i) {
@@ -210,29 +215,34 @@ func findFreeBitmapPosition(storage []byte, fsdata *structures.Metadata, bitmap 
 	return freePosition, nil
 }
 
+func getInodeValue(storage []byte, fsdata *structures.Metadata, bitmap structures.Bitmap, position int) bool {
+	inodesBitmap := getBitmap(storage, fsdata, bitmap)
+	return inodesBitmap[position]
+}
+
 func addBlockIdsInInode(inodeInfo *structures.Inode, blocks []int) {
 	for i, value := range blocks {
 		inodeInfo.BlocksLocations[i] = uint32(value)
 	}
 }
 
-func createRoot(storage []byte) *structures.DirectoryIterator {
+func createRoot(storage []byte) (*structures.DirectoryIterator, error) {
 	content := []structures.DirectoryEntry{structures.DirectoryEntry{FileName: ".", Inode: 1}, structures.DirectoryEntry{FileName: "..", Inode: 0}}
 
 	fsdata := ReadMetadata(storage)
 	encoded, err := diracts.EncodeDirectoryContent(content)
 	if err != nil {
-		fmt.Println(err)
-		panic("create root: could not encode root content")
+		//Log error
+		return nil, fmt.Errorf("create root: could not create root content")
 	}
 	blocksGathered, err := allocateContent(storage, fsdata, encoded)
 	if err != nil {
-		fmt.Println(err)
-		panic("create root: could not allocate root")
+		//Log error
+		return nil, fmt.Errorf("create root: could not allocate root")
 	}
 	inodeInfo := structures.Inode{Mode: 0, Size: uint32(len(encoded)), BlocksLocations: [12]uint32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
 	addBlockIdsInInode(&inodeInfo, blocksGathered)
 	allocateInode(storage, fsdata, &inodeInfo)
 	//returns first directory iterator
-	return &structures.DirectoryIterator{DirectoryInode: 1, DirectoryContent: content}
+	return &structures.DirectoryIterator{DirectoryInode: 1, DirectoryContent: content}, nil
 }

@@ -141,8 +141,7 @@ func GetBitmapIndex(storage []byte, fsdata *structures.Metadata, bitmap structur
 	return boolOctet
 }
 
-//GetBitmap returns whole bitmap as binary array
-func GetBitmap(storage []byte, fsdata *structures.Metadata, bitmap structures.Bitmap) []bool {
+func getBitmap(storage []byte, fsdata *structures.Metadata, bitmap structures.Bitmap) []bool {
 	bitmapStart := 0
 	bitmapLength := 0
 

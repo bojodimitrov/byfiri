@@ -17,7 +17,10 @@ func deleteBlocks(storage []byte, fsdata *structures.Metadata, inodeInfo *struct
 }
 
 func removeFileFromDirectory(storage []byte, current *structures.DirectoryIterator, fileInode int) {
-	content := ReadDirectory(storage, current.DirectoryInode)
+	content, err := ReadDirectory(storage, current.DirectoryInode)
+	if err != nil {
+		fmt.Print(err)
+	}
 
 	index := 0
 	for i, entry := range content {
@@ -36,57 +39,72 @@ func removeFileFromDirectory(storage []byte, current *structures.DirectoryIterat
 }
 
 //DeleteFile deletes file
-func DeleteFile(storage []byte, currentDirectory *structures.DirectoryIterator, inode int) {
+func DeleteFile(storage []byte, currentDirectory *structures.DirectoryIterator, inode int) error {
 	if inode == 0 {
-		fmt.Println("delete file: inode cannot be 0")
-		return
+		return fmt.Errorf("delete file: inode cannot be 0")
 	}
 	if inode == 1 {
-		fmt.Println("delete file: cannot delete root")
-		return
+		return fmt.Errorf("delete file: cannot delete root")
 	}
 
 	fsdata := ReadMetadata(storage)
-	inodeInfo := ReadInode(storage, fsdata, inode)
+	inodeInfo, err := ReadInode(storage, fsdata, inode)
+	if err != nil {
+		return err
+	}
 	clearFile(storage, inodeInfo.BlocksLocations, fsdata)
 	clearInode(storage, fsdata, inode)
 	removeFileFromDirectory(storage, currentDirectory, inode)
 	deleteBlocks(storage, fsdata, inodeInfo)
 	deleteInode(storage, fsdata, inode)
+	return nil
 }
 
-func directoryContainsDirectory(storage []byte, fsdata *structures.Metadata, currentDirectory *structures.DirectoryIterator) bool {
+func directoryContainsDirectory(storage []byte, fsdata *structures.Metadata, currentDirectory *structures.DirectoryIterator) (bool, error) {
 	for _, entry := range currentDirectory.DirectoryContent {
 		if entry.FileName != "." && entry.FileName != ".." {
-			inodeInfo := ReadInode(storage, fsdata, int(entry.Inode))
+			inodeInfo, err := ReadInode(storage, fsdata, int(entry.Inode))
+			if err != nil {
+				return false, err
+			}
 			if inodeInfo.Mode == 0 {
-				return true
+				return true, nil
 			}
 		}
 	}
-	return false
+	return false, nil
 }
 
-func iterateDirectoryRecursively(storage []byte, fsdata *structures.Metadata, currentDirectory *structures.DirectoryIterator) {
+func iterateDirectoryRecursively(storage []byte, fsdata *structures.Metadata, currentDirectory *structures.DirectoryIterator) error {
 	//bottom of recursion
-	if !directoryContainsDirectory(storage, fsdata, currentDirectory) {
+	val, err := directoryContainsDirectory(storage, fsdata, currentDirectory)
+	if err != nil {
+		return err
+	}
+	if !val {
 		// we delete all other files
 		for _, entry := range currentDirectory.DirectoryContent {
 			if entry.FileName != "." && entry.FileName != ".." {
 				DeleteFile(storage, currentDirectory, int(entry.Inode))
 			}
 		}
-		return
+		return nil
 	}
 	for _, entry := range currentDirectory.DirectoryContent {
 		if entry.FileName != "." && entry.FileName != ".." {
-			inodeInfo := ReadInode(storage, fsdata, int(entry.Inode))
+			inodeInfo, err := ReadInode(storage, fsdata, int(entry.Inode))
+			if err != nil {
+				return err
+			}
 			if inodeInfo.Mode == 0 {
 				child, err := EnterDirectory(storage, currentDirectory, entry.FileName)
 				if err != nil {
-					panic("delete directory: could not recursively delete content")
+					return err
 				}
-				iterateDirectoryRecursively(storage, fsdata, child)
+				err = iterateDirectoryRecursively(storage, fsdata, child)
+				if err != nil {
+					return err
+				}
 				DeleteFile(storage, currentDirectory, int(entry.Inode))
 			}
 			if inodeInfo.Mode == 1 {
@@ -94,10 +112,11 @@ func iterateDirectoryRecursively(storage []byte, fsdata *structures.Metadata, cu
 			}
 		}
 	}
+	return nil
 }
 
 //DeleteDirectory deletes directory recursively
-func DeleteDirectory(storage []byte, currentDirectory *structures.DirectoryIterator, inode int) {
+func DeleteDirectory(storage []byte, currentDirectory *structures.DirectoryIterator, inode int) error {
 	fsdata := ReadMetadata(storage)
 	fileName := ""
 	for _, entry := range currentDirectory.DirectoryContent {
@@ -105,7 +124,16 @@ func DeleteDirectory(storage []byte, currentDirectory *structures.DirectoryItera
 			fileName = entry.FileName
 		}
 	}
-	deletedDirectory, _ := EnterDirectory(storage, currentDirectory, fileName)
-	iterateDirectoryRecursively(storage, fsdata, deletedDirectory)
+	deletedDirectory, err := EnterDirectory(storage, currentDirectory, fileName)
+	if err != nil {
+		// Log
+		return fmt.Errorf("delete directory: could not enter directory")
+	}
+	err = iterateDirectoryRecursively(storage, fsdata, deletedDirectory)
+	if err != nil {
+		// Log
+		return fmt.Errorf("delete directory: could not delete contents")
+	}
 	DeleteFile(storage, currentDirectory, inode)
+	return nil
 }

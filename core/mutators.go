@@ -76,27 +76,29 @@ func updateInode(storage []byte, fsdata *structures.Metadata, inodeInfo *structu
 }
 
 //UpdateFile updates file content
-func UpdateFile(storage []byte, inode int, content string) {
+func UpdateFile(storage []byte, inode int, content string) error {
 	if inode == 0 {
-		fmt.Println("update file: inode cannot be 0")
-		return
+		return fmt.Errorf("update file: inode cannot be 0")
 	}
 	fsdata := ReadMetadata(storage)
-	inodeInfo := ReadInode(storage, fsdata, inode)
+	inodeInfo, err := ReadInode(storage, fsdata, inode)
+	if err != nil {
+		return fmt.Errorf("update file: could not read inode")
+	}
 	if inodeInfo.Mode == 0 {
-		fmt.Println("update file: file is directory")
-		return
+		return fmt.Errorf("update file: file is directory")
 	}
 	clearFile(storage, inodeInfo.BlocksLocations, fsdata)
 	blocks, err := updateContent(storage, fsdata, inodeInfo, content)
 	if err != nil {
-		fmt.Println(err)
-		return
+		// Log err
+		return fmt.Errorf("update file: could not update content")
 	}
 	updateBlockIdsInInode(inodeInfo, blocks)
 	inodeInfo.Size = uint32(len(content))
 	clearInode(storage, fsdata, inode)
 	updateInode(storage, fsdata, inodeInfo, inode)
+	return nil
 }
 
 //RenameFile renames file
@@ -105,8 +107,8 @@ func RenameFile(storage []byte, currentDirectory *structures.DirectoryIterator, 
 		fmt.Println("rename file: inode cannot be 0")
 		return
 	}
-	if strings.ContainsAny(newName, "\\:") {
-		fmt.Println("rename file: name cannot contain ", []string{"'\\'", "", "':'"})
+	if strings.ContainsAny(newName, "\\:-") {
+		fmt.Println("rename file: name cannot contain ", []string{"\\", "-", ":"})
 		return
 	}
 	for i, dirEntry := range currentDirectory.DirectoryContent {
@@ -120,27 +122,31 @@ func RenameFile(storage []byte, currentDirectory *structures.DirectoryIterator, 
 }
 
 //UpdateDirectory updates file content
-func UpdateDirectory(storage []byte, inode int, content []structures.DirectoryEntry) {
+func UpdateDirectory(storage []byte, inode int, content []structures.DirectoryEntry) error {
 	if inode == 0 {
-		fmt.Println("update directory: inode cannot be 0")
-		return
+		return fmt.Errorf("update directory: inode cannot be 0")
 	}
 	fsdata := ReadMetadata(storage)
-	inodeInfo := ReadInode(storage, fsdata, inode)
+	inodeInfo, err := ReadInode(storage, fsdata, inode)
+	if err != nil {
+		return fmt.Errorf("update directory: could not read inode")
+	}
 	if inodeInfo.Mode == 1 {
-		fmt.Println("update directory: directory is file")
-		return
+		return fmt.Errorf("update directory: directory is file")
 	}
 	clearFile(storage, inodeInfo.BlocksLocations, fsdata)
 
 	encoded, err := diracts.EncodeDirectoryContent(content)
+	if err != nil {
+		return err
+	}
 	blocks, err := updateContent(storage, fsdata, inodeInfo, encoded)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return fmt.Errorf("update directory: could not update content")
 	}
 	updateBlockIdsInInode(inodeInfo, blocks)
 	inodeInfo.Size = uint32(len(encoded))
 	clearInode(storage, fsdata, inode)
 	updateInode(storage, fsdata, inodeInfo, inode)
+	return nil
 }

@@ -8,7 +8,10 @@ import (
 
 // EnterDirectory returns DirectoryIterator of the desired directory within current directory
 func EnterDirectory(storage []byte, current *structures.DirectoryIterator, directory string) (*structures.DirectoryIterator, error) {
-	currentDirectoryContent := ReadDirectory(storage, current.DirectoryInode)
+	currentDirectoryContent, err := ReadDirectory(storage, current.DirectoryInode)
+	if err != nil {
+		return nil, err
+	}
 	inode := 0
 	for _, dirEntry := range currentDirectoryContent {
 		if dirEntry.FileName == directory {
@@ -19,27 +22,33 @@ func EnterDirectory(storage []byte, current *structures.DirectoryIterator, direc
 		return nil, fmt.Errorf("enter directory: name not found")
 	}
 	fsdata := ReadMetadata(storage)
-	inodeInfo := ReadInode(storage, fsdata, inode)
+	inodeInfo, err := ReadInode(storage, fsdata, inode)
+	if err != nil {
+		// Log err
+		return nil, fmt.Errorf("enter directory: could not read inode")
+	}
 	if inodeInfo.Mode != 0 {
 		return nil, fmt.Errorf("enter directory: file is not directory")
 	}
-	wantedDirectoryContent := ReadDirectory(storage, inode)
+	wantedDirectoryContent, err := ReadDirectory(storage, inode)
+	if err != nil {
+		return nil, err
+	}
 	wantedDirectoryIt := structures.DirectoryIterator{DirectoryInode: inode, DirectoryContent: wantedDirectoryContent}
 	return &wantedDirectoryIt, nil
 }
 
 // IsDirectory checks if name is directory
-func IsDirectory(storage []byte, current *structures.DirectoryIterator, name string) bool {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("read directory: inode does not exist")
-		}
-	}()
+func IsDirectory(storage []byte, current *structures.DirectoryIterator, name string) (bool, error) {
 
 	inode := GetInode(storage, current, name)
 	fsdata := ReadMetadata(storage)
-	inodeInfo := ReadInode(storage, fsdata, inode)
-	return inodeInfo.Mode == 0
+	inodeInfo, err := ReadInode(storage, fsdata, inode)
+	if err != nil {
+		// Log err
+		return false, fmt.Errorf("is directory: could not read inode")
+	}
+	return inodeInfo.Mode == 0, nil
 }
 
 // GetInode returns inode behind a name

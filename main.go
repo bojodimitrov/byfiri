@@ -85,6 +85,9 @@ func checkArguments() bool {
 func main() {
 	size, blockSize := readArgs()
 	storage := core.InitFsSpace(size)
-	dir := core.AllocateAllStructures(storage, size, blockSize)
+	dir, err := core.AllocateAllStructures(storage, size, blockSize)
+	if err != nil {
+		fmt.Println("unsuccessful initialisation: exit inevitable")
+	}
 	cli.Start(storage, dir)
 }

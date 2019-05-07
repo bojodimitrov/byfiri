@@ -1,6 +1,10 @@
 language: go
+install:
+    - go get github.com/onsi/gomega
+    - go get github.com/onsi/ginkgo/ginkgo
+    - export PATH=$PATH:$HOME/gopath/bin
 
-script: go test ./...
+script: go test ./... && ginkgo ./...
 
 notifications:
     email: false

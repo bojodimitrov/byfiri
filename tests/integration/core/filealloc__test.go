@@ -1,7 +1,6 @@
 package coreint__test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/bojodimitrov/byfiri/core"
@@ -29,60 +28,6 @@ func TestRoot(t *testing.T) {
 
 	if rootEntry.FileName != "." && rootEntry.Inode != 1 {
 		t.Errorf("got %q, want %q", rootContent, expected)
-	}
-}
-
-func TestFileAllocation(t *testing.T) {
-	storage, currentDir := setupFileSystem(t)
-	content := "file content"
-	fileInode, err := core.AllocateFile(storage, currentDir, "test file", content)
-	if err != nil {
-		t.Errorf("got %q, want %q", err, "nil")
-	}
-	result, err := core.ReadFile(storage, fileInode)
-
-	if content != result && err != nil {
-		t.Errorf("got %q, want %q", result, content)
-	}
-}
-
-func TestFileAllocationLarge(t *testing.T) {
-	storage, currentDir := setupFileSystem(t)
-	content := strings.Repeat("a", structures.DefaultBlockSize+10)
-	fileInode, err := core.AllocateFile(storage, currentDir, "test file", content)
-	if err != nil {
-		t.Errorf("got %q, want %q", err, "nil")
-	}
-	result, err := core.ReadFile(storage, fileInode)
-
-	if content != result && err != nil {
-		t.Errorf("got %q, want %q", result, content)
-	}
-}
-
-func TestFileAllocationConsequtiveInodes(t *testing.T) {
-	storage, currentDir := setupFileSystem(t)
-	content := "file content"
-	rootContent, err := core.ReadDirectory(storage, 1)
-	if err != nil {
-		t.Errorf("got %q, want %q", err, "nil")
-	}
-	rootEntry := rootContent[0]
-	fileInode1, err := core.AllocateFile(storage, currentDir, "test file", content)
-	if err != nil {
-		t.Errorf("got %q, want %q", err, "nil")
-	}
-	fileInode2, err := core.AllocateFile(storage, currentDir, "test file 2", content)
-	if err != nil {
-		t.Errorf("got %q, want %q", err, "nil")
-	}
-	fileInode3, err := core.AllocateFile(storage, currentDir, "test file 3", content)
-	if err != nil {
-		t.Errorf("got %q, want %q", err, "nil")
-	}
-
-	if rootEntry.Inode != 1 || fileInode1 != 2 || fileInode2 != 3 || fileInode3 != 4 {
-		t.Errorf("got %d, want %d", []int{int(rootEntry.Inode), fileInode1, fileInode2, fileInode3}, []int{1, 2, 3, 4})
 	}
 }
 

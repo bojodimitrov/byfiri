@@ -43,9 +43,6 @@ func DeleteFile(storage []byte, currentDirectory *structures.DirectoryIterator, 
 	if inode == 0 {
 		return fmt.Errorf("delete file: inode cannot be 0")
 	}
-	if inode == 1 {
-		return fmt.Errorf("delete file: cannot delete root")
-	}
 
 	fsdata := ReadMetadata(storage)
 	inodeInfo, err := ReadInode(storage, fsdata, inode)
@@ -117,6 +114,10 @@ func iterateDirectoryRecursively(storage []byte, fsdata *structures.Metadata, cu
 
 //DeleteDirectory deletes directory recursively
 func DeleteDirectory(storage []byte, currentDirectory *structures.DirectoryIterator, inode int) error {
+	if inode == 1 {
+		return fmt.Errorf("delete file: cannot delete root")
+	}
+
 	fsdata := ReadMetadata(storage)
 	fileName := ""
 	for _, entry := range currentDirectory.DirectoryContent {
@@ -134,6 +135,10 @@ func DeleteDirectory(storage []byte, currentDirectory *structures.DirectoryItera
 		// Log
 		return fmt.Errorf("delete directory: could not delete contents")
 	}
-	DeleteFile(storage, currentDirectory, inode)
+	err = DeleteFile(storage, currentDirectory, inode)
+	if err != nil {
+		// Log
+		return fmt.Errorf("delete directory: could not delete directory")
+	}
 	return nil
 }

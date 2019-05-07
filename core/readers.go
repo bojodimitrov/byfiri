@@ -11,7 +11,7 @@ import (
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
-//ReadInode returns an Inode structure written behind inode location
+//ReadInode returns file inode
 func ReadInode(storage []byte, metadata *structures.Metadata, inode int) (*structures.Inode, error) {
 	inodesBeginning := int(metadata.Root)
 	inodeLocation := inodesBeginning + inode*int(structures.InodeSize)
@@ -49,8 +49,7 @@ func ReadInode(storage []byte, metadata *structures.Metadata, inode int) (*struc
 	return &inodeInfo, nil
 }
 
-//ReadContent reads file content
-func ReadContent(storage []byte, metadata *structures.Metadata, inodeInfo *structures.Inode) string {
+func readContent(storage []byte, metadata *structures.Metadata, inodeInfo *structures.Inode) string {
 	blocksBeginning := int(metadata.FirstBlock)
 	blockSize := int(metadata.BlockSize)
 	fileSize := int(inodeInfo.Size)
@@ -86,7 +85,7 @@ func ReadFile(storage []byte, inode int) (string, error) {
 	if inodeInfo.Mode == 0 {
 		return "", fmt.Errorf("read file: file is directory")
 	}
-	return ReadContent(storage, fsdata, inodeInfo), nil
+	return readContent(storage, fsdata, inodeInfo), nil
 }
 
 //ReadDirectory returns directory content
@@ -109,7 +108,7 @@ func ReadDirectory(storage []byte, inode int) ([]structures.DirectoryEntry, erro
 		return nil, fmt.Errorf("update directory: directory is file")
 	}
 
-	content := ReadContent(storage, fsdata, inodeInfo)
+	content := readContent(storage, fsdata, inodeInfo)
 	dirContent := diracts.DecodeDirectoryContent(content)
 	return dirContent, nil
 }

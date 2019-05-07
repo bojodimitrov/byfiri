@@ -1,6 +1,6 @@
 language: go
 
-script: go test ./...
+script: go test ./... && ginkgo ./...
 
 notifications:
     email: false

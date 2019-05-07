@@ -81,6 +81,9 @@ func UpdateFile(storage []byte, inode int, content string) error {
 		return fmt.Errorf("update file: inode cannot be 0")
 	}
 	fsdata := ReadMetadata(storage)
+	if !getInodeValue(storage, fsdata, structures.Inodes, inode) {
+		return fmt.Errorf("update file: file does not exits")
+	}
 	inodeInfo, err := ReadInode(storage, fsdata, inode)
 	if err != nil {
 		return fmt.Errorf("update file: could not read inode")
@@ -102,23 +105,21 @@ func UpdateFile(storage []byte, inode int, content string) error {
 }
 
 //RenameFile renames file
-func RenameFile(storage []byte, currentDirectory *structures.DirectoryIterator, inode int, newName string) {
+func RenameFile(storage []byte, currentDirectory *structures.DirectoryIterator, inode int, newName string) error {
 	if inode == 0 {
-		fmt.Println("rename file: inode cannot be 0")
-		return
+		return fmt.Errorf("rename file: inode cannot be 0")
 	}
 	if strings.ContainsAny(newName, "\\:-") {
-		fmt.Println("rename file: name cannot contain ", []string{"\\", "-", ":"})
-		return
+		return fmt.Errorf("rename file: name cannot contain %q", []string{"\\", "-", ":"})
 	}
 	for i, dirEntry := range currentDirectory.DirectoryContent {
 		if dirEntry.Inode == uint32(inode) {
 			currentDirectory.DirectoryContent[i].FileName = newName
 			UpdateDirectory(storage, currentDirectory.DirectoryInode, currentDirectory.DirectoryContent)
-			return
+			return nil
 		}
 	}
-	fmt.Println("rename file: file not found")
+	return fmt.Errorf("rename file: file not found")
 }
 
 //UpdateDirectory updates file content
@@ -127,6 +128,9 @@ func UpdateDirectory(storage []byte, inode int, content []structures.DirectoryEn
 		return fmt.Errorf("update directory: inode cannot be 0")
 	}
 	fsdata := ReadMetadata(storage)
+	if !getInodeValue(storage, fsdata, structures.Inodes, inode) {
+		return fmt.Errorf("update directory: directory does not exits")
+	}
 	inodeInfo, err := ReadInode(storage, fsdata, inode)
 	if err != nil {
 		return fmt.Errorf("update directory: could not read inode")

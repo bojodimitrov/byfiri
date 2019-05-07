@@ -86,6 +86,10 @@ func main() {
 	size, blockSize := readArgs()
 	storage := core.InitFsSpace(size)
 	dir, err := core.AllocateAllStructures(storage, size, blockSize)
+
+	dirInode, _ := core.AllocateDirectory(storage, dir, "dir_name")
+	core.DeleteDirectory(storage, dir, dirInode)
+
 	if err != nil {
 		fmt.Println("unsuccessful initialisation: exit inevitable")
 	}

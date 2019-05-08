@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 
+	"github.com/bojodimitrov/byfiri/logger"
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
@@ -25,6 +26,7 @@ func EnterDirectory(storage []byte, current *structures.DirectoryIterator, direc
 	inodeInfo, err := ReadInode(storage, fsdata, inode)
 	if err != nil {
 		// Log err
+		logger.Log("enter directory: " + err.Error())
 		return nil, fmt.Errorf("enter directory: could not read inode")
 	}
 	if inodeInfo.Mode != 0 {
@@ -45,7 +47,7 @@ func IsDirectory(storage []byte, current *structures.DirectoryIterator, name str
 	fsdata := ReadMetadata(storage)
 	inodeInfo, err := ReadInode(storage, fsdata, inode)
 	if err != nil {
-		// Log err
+		logger.Log("enter directory: " + err.Error())
 		return false, fmt.Errorf("is directory: could not read inode")
 	}
 	return inodeInfo.Mode == 0, nil

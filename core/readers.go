@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/bojodimitrov/byfiri/logger"
 	"github.com/bojodimitrov/byfiri/util"
 
 	"github.com/bojodimitrov/byfiri/diracts"
@@ -20,6 +21,7 @@ func ReadInode(storage []byte, metadata *structures.Metadata, inode int) (*struc
 	mode, err := strconv.Atoi(modeStr)
 
 	if err != nil {
+		logger.Log("read inode: " + err.Error())
 		return nil, fmt.Errorf("read inode: corrupt inode data")
 	}
 
@@ -29,6 +31,7 @@ func ReadInode(storage []byte, metadata *structures.Metadata, inode int) (*struc
 	size, err := strconv.Atoi(sizeStr)
 
 	if err != nil {
+		logger.Log("read inode: " + err.Error())
 		return nil, fmt.Errorf("read inode: corrupt inode data")
 	}
 
@@ -40,6 +43,7 @@ func ReadInode(storage []byte, metadata *structures.Metadata, inode int) (*struc
 		block := Read(storage, inodeLocation, 10)
 		value, err := strconv.Atoi(block)
 		if err != nil {
+			logger.Log("read inode: " + err.Error())
 			return nil, fmt.Errorf("read inode: corrupt inode data")
 		}
 		blocksGathered[i] = uint32(value)
@@ -79,7 +83,7 @@ func ReadFile(storage []byte, inode int) (string, error) {
 	}
 	inodeInfo, err := ReadInode(storage, fsdata, inode)
 	if err != nil {
-		//Log err
+		logger.Log("read file: " + err.Error())
 		return "", fmt.Errorf("read file: could not read inode")
 	}
 	if inodeInfo.Mode == 0 {
@@ -101,11 +105,11 @@ func ReadDirectory(storage []byte, inode int) ([]structures.DirectoryEntry, erro
 	}
 	inodeInfo, err := ReadInode(storage, fsdata, inode)
 	if err != nil {
-		//Log err
-		return nil, fmt.Errorf("read file: could not read inode")
+		logger.Log("read directory: " + err.Error())
+		return nil, fmt.Errorf("read directory: could not read inode")
 	}
 	if inodeInfo.Mode == 1 {
-		return nil, fmt.Errorf("update directory: directory is file")
+		return nil, fmt.Errorf("read directory: directory is file")
 	}
 
 	content := readContent(storage, fsdata, inodeInfo)

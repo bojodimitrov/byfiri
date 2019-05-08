@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 
+	"github.com/bojodimitrov/byfiri/logger"
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
@@ -127,17 +128,17 @@ func DeleteDirectory(storage []byte, currentDirectory *structures.DirectoryItera
 	}
 	deletedDirectory, err := EnterDirectory(storage, currentDirectory, fileName)
 	if err != nil {
-		// Log
+		logger.Log("delete directory: " + err.Error())
 		return fmt.Errorf("delete directory: could not enter directory")
 	}
 	err = iterateDirectoryRecursively(storage, fsdata, deletedDirectory)
 	if err != nil {
-		// Log
+		logger.Log("delete directory: " + err.Error())
 		return fmt.Errorf("delete directory: could not delete contents")
 	}
 	err = DeleteFile(storage, currentDirectory, inode)
 	if err != nil {
-		// Log
+		logger.Log("delete directory: " + err.Error())
 		return fmt.Errorf("delete directory: could not delete directory")
 	}
 	return nil

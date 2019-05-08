@@ -87,8 +87,6 @@ func main() {
 	size, blockSize := readArgs()
 	storage := core.InitFsSpace(size)
 	dir, err := core.AllocateAllStructures(storage, size, blockSize)
-	logger.Log("some random log")
-
 	if err != nil {
 		logger.Log("unsuccessful initialisation:" + err.Error())
 		fmt.Println("unsuccessful initialisation: exit inevitable")

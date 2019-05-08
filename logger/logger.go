@@ -23,6 +23,10 @@ func Log(message string) {
 }
 
 func getFile() *os.File {
+	if _, err := os.Stat("logs"); os.IsNotExist(err) {
+		os.Mkdir("logs", os.ModeDir)
+	}
+
 	currentTime := time.Now()
 	dateFileName := currentTime.Format("logs/02_01_2006") + ".txt"
 

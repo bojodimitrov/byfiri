@@ -79,7 +79,7 @@ func open(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 		preserveCurrent := currentDirectory
 		path := strings.Split(commands[1], "\\")
 		for _, value := range path {
-			isDir, err := core.IsDirectory(storage, currentDirectory, commands[1])
+			isDir, err := core.IsDirectory(storage, currentDirectory, value)
 			if err != nil {
 				//Log err
 				fmt.Println("open: could not read file")

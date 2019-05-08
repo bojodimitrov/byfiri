@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bojodimitrov/byfiri/diracts"
+	"github.com/bojodimitrov/byfiri/logger"
 	"github.com/bojodimitrov/byfiri/structures"
 	"github.com/bojodimitrov/byfiri/util"
 )
@@ -232,12 +233,12 @@ func createRoot(storage []byte) (*structures.DirectoryIterator, error) {
 	fsdata := ReadMetadata(storage)
 	encoded, err := diracts.EncodeDirectoryContent(content)
 	if err != nil {
-		//Log error
+		logger.Log("create root: " + err.Error())
 		return nil, fmt.Errorf("create root: could not create root content")
 	}
 	blocksGathered, err := allocateContent(storage, fsdata, encoded)
 	if err != nil {
-		//Log error
+		logger.Log("create root: " + err.Error())
 		return nil, fmt.Errorf("create root: could not allocate root")
 	}
 	inodeInfo := structures.Inode{Mode: 0, Size: uint32(len(encoded)), BlocksLocations: [12]uint32{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}

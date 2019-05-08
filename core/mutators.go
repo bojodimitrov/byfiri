@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bojodimitrov/byfiri/diracts"
+	"github.com/bojodimitrov/byfiri/logger"
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
@@ -94,7 +95,7 @@ func UpdateFile(storage []byte, inode int, content string) error {
 	clearFile(storage, inodeInfo.BlocksLocations, fsdata)
 	blocks, err := updateContent(storage, fsdata, inodeInfo, content)
 	if err != nil {
-		// Log err
+		logger.Log("update file: " + err.Error())
 		return fmt.Errorf("update file: could not update content")
 	}
 	updateBlockIdsInInode(inodeInfo, blocks)
@@ -133,6 +134,7 @@ func UpdateDirectory(storage []byte, inode int, content []structures.DirectoryEn
 	}
 	inodeInfo, err := ReadInode(storage, fsdata, inode)
 	if err != nil {
+		logger.Log("update directory: " + err.Error())
 		return fmt.Errorf("update directory: could not read inode")
 	}
 	if inodeInfo.Mode == 1 {
@@ -146,6 +148,7 @@ func UpdateDirectory(storage []byte, inode int, content []structures.DirectoryEn
 	}
 	blocks, err := updateContent(storage, fsdata, inodeInfo, encoded)
 	if err != nil {
+		logger.Log("update directory: " + err.Error())
 		return fmt.Errorf("update directory: could not update content")
 	}
 	updateBlockIdsInInode(inodeInfo, blocks)

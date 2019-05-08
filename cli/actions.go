@@ -7,6 +7,7 @@ import (
 
 	"github.com/bojodimitrov/byfiri/core"
 	"github.com/bojodimitrov/byfiri/graphic"
+	"github.com/bojodimitrov/byfiri/logger"
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
@@ -81,12 +82,17 @@ func open(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 		for _, value := range path {
 			isDir, err := core.IsDirectory(storage, currentDirectory, value)
 			if err != nil {
-				//Log err
+				logger.Log("open: " + err.Error())
 				fmt.Println("open: could not read file")
 				return currentDirectory
 			}
 			if isDir {
 				currentDirectory, err = core.EnterDirectory(storage, currentDirectory, value)
+				if err != nil {
+					logger.Log("open: " + err.Error())
+					fmt.Println("open: could not enter directory")
+					return currentDirectory
+				}
 			} else {
 				fmt.Print(core.ReadFile(storage, core.GetInode(storage, currentDirectory, value)))
 				return preserveCurrent
@@ -95,7 +101,7 @@ func open(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 	} else {
 		isDir, err := core.IsDirectory(storage, currentDirectory, commands[1])
 		if err != nil {
-			//Log err
+			logger.Log("open: " + err.Error())
 			fmt.Println("open: could not read file")
 			return currentDirectory
 		}
@@ -126,7 +132,7 @@ func edit(storage []byte, currentDirectory *structures.DirectoryIterator, comman
 	}
 	value, err := core.IsDirectory(storage, currentDirectory, commands[1])
 	if err != nil {
-		//Log err
+		logger.Log("edit: " + err.Error())
 		fmt.Println("edit: could not read file")
 		return currentDirectory
 	}
@@ -188,7 +194,7 @@ func delete(storage []byte, currentDirectory *structures.DirectoryIterator, comm
 	}
 	isDir, err := core.IsDirectory(storage, currentDirectory, commands[1])
 	if err != nil {
-		//Log err
+		logger.Log("delete: " + err.Error())
 		fmt.Println("delete: could not delete file")
 		return currentDirectory
 	}

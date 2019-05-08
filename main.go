@@ -7,6 +7,7 @@ import (
 
 	"github.com/bojodimitrov/byfiri/cli"
 	"github.com/bojodimitrov/byfiri/core"
+	"github.com/bojodimitrov/byfiri/logger"
 	"github.com/bojodimitrov/byfiri/structures"
 )
 
@@ -86,11 +87,10 @@ func main() {
 	size, blockSize := readArgs()
 	storage := core.InitFsSpace(size)
 	dir, err := core.AllocateAllStructures(storage, size, blockSize)
-
-	dirInode, _ := core.AllocateDirectory(storage, dir, "dir_name")
-	core.DeleteDirectory(storage, dir, dirInode)
+	logger.Log("some random log")
 
 	if err != nil {
+		logger.Log("unsuccessful initialisation:" + err.Error())
 		fmt.Println("unsuccessful initialisation: exit inevitable")
 	}
 	cli.Start(storage, dir)

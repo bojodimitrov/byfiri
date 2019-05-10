@@ -15,8 +15,8 @@ const makeHelp = `make
 
 Creates both file and directory
 
-make d [directory name] - Creates a directory within the current one
-make f [file name] - Creates file within the current directory. After issuing command the user is prompted to type the file contents:
+make -d [directory name] - Creates a directory within the current one
+make -f [file name] - Creates file within the current directory. After issuing command the user is prompted to type the file contents:
 	>some content|
 	It is a multiline input. In order to quit input ':q' or ':Q' needs to be typed on a new line
 `

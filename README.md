@@ -10,7 +10,7 @@ to start it run **go build** and after that **byfiry.exe {size} {size abbreviati
 
 expects file, directory name or path as parameter. If name is file prints content, if it is directory: enters the directory
 
--   **make** {f/d} {name}
+-   **make** {-f/-d} {name}
 
 with option f: creates file with given name and starts reading user input that will be the content of the file. Exiting is performed by typing ':q' or ':Q' on new line
 
